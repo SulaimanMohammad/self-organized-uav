@@ -48,6 +48,7 @@ void addEntry(struct Dictionary *dict, char key[], float value);
 
 // this create the 6 spots with coordiantes regaring the sink not with the respect of the drone position
 void creatSpots(struct Dictionary *dict, const float Dx, const float Dy);
+void setDist(struct Dictionary *dict, const float Dx, const float Dy); // for each new iteration
 
 void setStatus(struct Dictionary *dict, char key[], char state[], int W);
 
@@ -73,6 +74,7 @@ void setPriorities(struct Dictionary *dict);
 void initializePoints(Point points[], int numPoints);
 
 void printPoints(Point points[], int numPoints);
+void savePoints(Point points[], int numPoints, FILE *fp);
 
 int countPointsAtPosition(Point points[], int numPoints, float x, float y);
 

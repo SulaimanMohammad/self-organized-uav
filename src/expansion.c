@@ -54,6 +54,32 @@ void creatSpots(struct Dictionary *dict, const float Dx, const float Dy)
     addEntry(dict, "s6", sqrt(DxDy3a2 - a * (3 * Dy - sqDx)));
 }
 
+void setDist(struct Dictionary *dict, const float Dx, const float Dy)
+{
+    float DxDy2 = (Dx * Dx) + (Dy * Dy);
+    float DxDy3a2 = DxDy2 + 3 * a * a;
+    float sqDx = sqrt(3) * Dx;
+    float aDx = (2 * sqrt(3)) * Dx;
+
+    for (int i = 0; i < dict->size; i++)
+    {
+        if (strcmp(dict->keys[i], "s0") == 0)
+            dict->distances[i] = sqrt(DxDy2);
+        if (strcmp(dict->keys[i], "s1") == 0)
+            dict->distances[i] = sqrt(DxDy3a2 + a * aDx);
+        if (strcmp(dict->keys[i], "s2") == 0)
+            dict->distances[i] = sqrt(DxDy3a2 + a * (sqDx + (3 * Dy)));
+        if (strcmp(dict->keys[i], "s3") == 0)
+            dict->distances[i] = sqrt(DxDy3a2 + a * (3 * Dy - aDx));
+        if (strcmp(dict->keys[i], "s4") == 0)
+            dict->distances[i] = sqrt(DxDy3a2 - aDx + 3 * a * a);
+        if (strcmp(dict->keys[i], "s5") == 0)
+            dict->distances[i] = sqrt(DxDy3a2 - a * (aDx + 3 * Dy));
+        if (strcmp(dict->keys[i], "s6") == 0)
+            dict->distances[i] = sqrt(DxDy3a2 - a * (3 * Dy - sqDx));
+    }
+}
+
 void setStatus(struct Dictionary *dict, char key[], char state[], int W)
 {
     // Search for the key in the dictionary
@@ -232,12 +258,24 @@ void initializePoints(Point points[], int numPoints)
 
 void printPoints(Point points[], int numPoints)
 {
-    printf("Points are :\n");
     for (int i = 0; i < numPoints; i++)
     {
-        printf("(%f, %f)\n", points[i].x, points[i].y);
+        printf("(%f, %f), ", points[i].x, points[i].y);
     }
-    printf("------------------------------\n");
+    printf("\n");
+}
+
+void savePoints(Point points[], int numPoints, FILE *fp)
+{
+    for (int i = 0; i < numPoints; i++)
+    {
+        fprintf(fp, "(");
+        fprintf(fp, "%.6f", points[i].x);
+        fprintf(fp, ", ");
+        fprintf(fp, "%.6f", points[i].y);
+        fprintf(fp, "),");
+    }
+    fprintf(fp, "\n");
 }
 
 int countPointsAtPosition(Point points[], int numPoints, float x, float y)
@@ -267,7 +305,7 @@ void set_num_drones_at_neighbors(Point points[], struct Dictionary *dict, Point 
     {
 
         count_drons = countPointsAtPosition(points, numPoints, currentPoint->x + DIR_VECTORS[j][0], currentPoint->y + DIR_VECTORS[j][1]);
-        // printf(" point %d at (%f, %f ) has %d  drons at x %f, y %f\n", i, count_drons, points[i].x, points[i].y, points[i].x + DIR_VECTORS[j][0], points[i].y + DIR_VECTORS[j][1]);
+        printf(" point at (%f, %f ) has %d  drons at x %f, y %f\n", currentPoint->x, currentPoint->y, count_drons, currentPoint->x + DIR_VECTORS[j][0], currentPoint->y + DIR_VECTORS[j][1]);
         if (count_drons != 0)
         {
             setStatus(dict, dict->keys[j], "o", count_drons); // dictionaries[i].w[j]

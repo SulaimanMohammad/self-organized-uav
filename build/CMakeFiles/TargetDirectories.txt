@@ -1,4 +1,0 @@
-/home/sulaiman/Desktop/IMT/code/Self-organized UAV/build/CMakeFiles/expansion.dir
-/home/sulaiman/Desktop/IMT/code/Self-organized UAV/build/CMakeFiles/main.dir
-/home/sulaiman/Desktop/IMT/code/Self-organized UAV/build/CMakeFiles/edit_cache.dir
-/home/sulaiman/Desktop/IMT/code/Self-organized UAV/build/CMakeFiles/rebuild_cache.dir
