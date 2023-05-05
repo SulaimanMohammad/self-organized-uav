@@ -7,3 +7,4 @@ where "n" is the number of drons
 
 ## Calculations are done as shown in fig
  <img src="https://raw.githubusercontent.com/SulaimanMohammad/self-organized-uav/tree/main/.vscode/Untitled.png" width="800">
+![As shown here ](https://github.com/SulaimanMohammad/self-organized-uav/blob/main/.vscode/Untitled.png)
