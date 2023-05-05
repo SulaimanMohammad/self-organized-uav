@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "ratio": "c"
+        "ratio": "c",
+        "cmath": "c",
+        "numbers": "c"
     }
 }

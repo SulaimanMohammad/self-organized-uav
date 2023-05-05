@@ -23,14 +23,14 @@ enum Direction
 };
 extern float DIR_VECTORS[7][2];
 
-typedef struct Point
+typedef struct Drones
 {
     float x;
     float y;
     char stat; // free , border , irrmovable
-} Point;
+} Drones;
 
-struct Dictionary
+struct Neighbors
 {
     char keys[MAX_SIZE][MAX_SIZE];
     float distances[MAX_SIZE];
@@ -40,46 +40,46 @@ struct Dictionary
     int w[MAX_SIZE]; // you needed to be incremented when a new arriver
 };
 
-// Initialize the dictionary
-void initDictionary(struct Dictionary *dict);
+// Initialize the Neighbors
+void initNeighbors(struct Neighbors *neighbors);
 
-// Add a new key-value pair to the dictionary
-void addEntry(struct Dictionary *dict, char key[], float value);
+// Add a new key-value pair to the Neighbors
+void addEntry(struct Neighbors *neighbors, char key[], float value);
 
 // this create the 6 spots with coordiantes regaring the sink not with the respect of the drone position
-void creatSpots(struct Dictionary *dict, float Dx, float Dy);
-void setDist(struct Dictionary *dict, float Dx, float Dy); // for each new iteration
+void creatSpots(struct Neighbors *neighbors, float Dx, float Dy);
+void setDist(struct Neighbors *neighbors, float Dx, float Dy); // for each new iteration
 
-void setStatus(struct Dictionary *dict, char key[], char state[], int W);
+void setStatus(struct Neighbors *neighbors, char key[], char state[], int W);
 
-// Get the value associated with a key in the dictionary
-float getDist(struct Dictionary *dict, char key[]);
+// Get the value associated with a key in the Neighbors
+float getDist(struct Neighbors *neighbors, char key[]);
 
-float getPriority(struct Dictionary *dict, char key[]);
+float getPriority(struct Neighbors *neighbors, char key[]);
 
-char *getStatus(struct Dictionary *dict, char key[]);
+char *getStatus(struct Neighbors *neighbors, char key[]);
 
 // return the key of object in the minimum distance
-void findMinDistances(struct Dictionary *dict, char result[MAX_SIZE][MAX_SIZE], int *resultSize);
+void findMinDistances(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], int *resultSize);
 
-void findPriority(struct Dictionary *dict, char result[MAX_SIZE][MAX_SIZE], int *resultSize);
+void findPriority(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], int *resultSize);
 
 // generate random number [A,B[ , b is not included
 float randomFloat(float A, float B);
 
 int randomInt(int A, int B);
 
-void setPriorities(struct Dictionary *dict);
+void setPriorities(struct Neighbors *neighbors);
 
-void initializePoints(Point points[], int numPoints);
+void initializeDrones(Drones drones[], int numdrones);
 
-void printPoints(Point points[], int numPoints);
-void savePoints(Point points[], int numPoints, FILE *fp);
+void printDrones(Drones drones[], int numdrones);
+void saveDrones(Drones drones[], int numdrones, FILE *fp);
 
-int countPointsAtPosition(Point points[], int numPoints, float x, float y);
+int countdronesAtPosition(Drones drones[], int numdrones, float x, float y);
 
-void movePoint(Point *point, enum Direction dir);
+void moveDrones(Drones *Drones, enum Direction dir);
 
-void set_num_drones_at_neighbors(Point points[], struct Dictionary *dict, Point *currentPoint, int numPoints);
+void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
 
 #endif
