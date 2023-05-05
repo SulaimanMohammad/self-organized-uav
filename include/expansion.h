@@ -21,7 +21,7 @@ enum Direction
     s5,
     s6
 };
-extern double DIR_VECTORS[7][2];
+extern float DIR_VECTORS[7][2];
 
 typedef struct Point
 {
@@ -47,8 +47,8 @@ void initDictionary(struct Dictionary *dict);
 void addEntry(struct Dictionary *dict, char key[], float value);
 
 // this create the 6 spots with coordiantes regaring the sink not with the respect of the drone position
-void creatSpots(struct Dictionary *dict, const float Dx, const float Dy);
-void setDist(struct Dictionary *dict, const float Dx, const float Dy); // for each new iteration
+void creatSpots(struct Dictionary *dict, float Dx, float Dy);
+void setDist(struct Dictionary *dict, float Dx, float Dy); // for each new iteration
 
 void setStatus(struct Dictionary *dict, char key[], char state[], int W);
 
