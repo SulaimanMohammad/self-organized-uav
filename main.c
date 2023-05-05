@@ -40,7 +40,6 @@ int main(int argc, char *argv[])
         int dir = randomInt(1, 6); // remeber dir are from 0-6 but here number is between 1-6 so no drone start at the sink because that will lead to worng pripority
         movePoint(&points[i], dir);
     }
-    // printPoints(points, numPoints);
     savePoints(points, numPoints, fp);
 
     // init the 6 neighboors distances
@@ -51,24 +50,28 @@ int main(int argc, char *argv[])
     char Priority[MAX_SIZE][MAX_SIZE];
     int PrioritySize;
     int dir;
-    for (int k = 0; k < 2; k++)
+    for (int k = 0; k < 8; k++)
     {
         // each point now need to check around then move then the second oen do that
         // the ones before should be moved so the next one can detect the new position
         for (int i = 0; i < numPoints; i++)
         {
+            // printf("---------point %d at (%f,%f) ---------\n", i, points[i].x, points[i].y);
+            setDist(&dictionaries[i], points[i].x, points[i].y); // update for the next iteration
+
             set_num_drones_at_neighbors(points, &dictionaries[i], &points[i], numPoints);
             setPriorities(&dictionaries[i]);
-            findPriority(&dictionaries[i], Priority, &PrioritySize);
 
-            printf("point at (%f,%f) Go to  %s with distance %f and priort %f\n", points[i].x, points[i].y, Priority[0], getDist(&dictionaries[i], Priority[0]), getPriority(&dictionaries[i], Priority[0]));
+            findPriority(&dictionaries[i], Priority, &PrioritySize); // that should return only one number, since there is also random number generator
+                                                                     // if the random numbering is not considered then there will be many possible solution
+                                                                     // and that if the spots has the same number of dron in it and using the [f(w,c,eps), f(w,c)[
+                                                                     // then same number will be choosed for pts has same drons
+
+            // printf("point %d at (%f,%f) Go to  %s with distance %f and priort %f\n", i, points[i].x, points[i].y, Priority[0], getDist(&dictionaries[i], Priority[0]), getPriority(&dictionaries[i], Priority[0]));
             sscanf(Priority[0], "s%d", &dir);
-            // printf("dir%d\n", dir);
             movePoint(&points[i], dir);
-            // printPoints(points, numPoints);
             setDist(&dictionaries[i], points[i].x, points[i].y); // update for the next iteration
         }
-        printf("-------------\n");
         savePoints(points, numPoints, fp);
     }
     fclose(fp);
