@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.animation import FuncAnimation
 
 with open("./build/output.txt", "r") as f:
     lines = f.readlines()
@@ -17,23 +18,41 @@ for line in lines:
 
 colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k'] * len(stage_points)# List of colors for each stage
 
-for i, points in enumerate(points_list):
+fig, ax = plt.subplots()
+
+# Define the update function for the animation
+def update(frame):
+    ax.clear()
+    # Get the points for the current stage
+    points = points_list[frame]
     x, y = zip(*points)
-    plt.scatter(x, y, color=colors[:len(points)], marker='o',s=200)
-    for j, (x_coord, y_coord) in enumerate(points):
-        plt.annotate(f'{i}', (x_coord, y_coord), xytext=(0, 10), textcoords='offset points', ha='center', fontsize=8) # Add a small text on top of each marker
+    # Plot the points
+    ax.scatter(x, y, color=colors[:len(points)], marker='o',s=200)
+    # Add axes lines and grid
+    ax.axhline(y=0, color='k')
+    ax.axvline(x=0, color='k')
+    ax.grid(True)
+    # Set the title for the current stage
+    ax.set_title(f"Stage {frame+1}")
+
+# Create the animation object
+ani = FuncAnimation(fig, update, frames=len(points_list), interval=1000, repeat=False)
+
+# Save the animation as a video
+ani.save('animation.mp4', fps=1)
+plt.show()
+
+
 # for i, points in enumerate(points_list):
 #     x, y = zip(*points)
-#     n_points = len(points)
-#     colors = plt.cm.tab10(np.linspace(0, 1, n_points))
-#     for j in range(n_points):
-#         plt.scatter(x[j], y[j], s=50, color=colors[j], marker='o')
-#         plt.text(x[j], y[j]+0.5, str(j+1), fontsize=10, ha='center', va='bottom')
-#     for j in range(n_points-1):
-#         plt.plot([x[j], x[j+1]], [y[j], y[j+1]], color=colors[j], linestyle='--')
-plt.axhline(y=0, color='k')
-plt.axvline(x=0, color='k')
-plt.grid(True)
-plt.title(f"Stage {i+1}")
-plt.show()
+#     plt.scatter(x, y, color=colors[:len(points)], marker='o',s=200)
+    
+#     plt.axhline(y=0, color='k')
+#     plt.axvline(x=0, color='k')
+#     plt.grid(True)
+#     plt.title(f"Stage {i+1}")
+#     plt.show()
+
+
+
 
