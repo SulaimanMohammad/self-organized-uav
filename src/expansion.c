@@ -6,15 +6,15 @@
 
 // Define the unit vectors for each direction
 // which is the 6 negihboors with respect of the drone position
-
-double DIR_VECTORS[7][2] = {
+#define sqrt3 1.732
+float DIR_VECTORS[7][2] = {
     {0, 0},                             // s0 // dont move stay
-    {(sqrt(3) * a), 0},                 // s1
-    {(sqrt(3) / 2) * a, (3 / 2) * a},   // s2
-    {-(sqrt(3) / 2) * a, (3 / 2) * a},  // s3
-    {-sqrt(3) * a, 0},                  // s4
-    {-(sqrt(3) / 2) * a, -(3 / 2) * a}, // s5
-    {(sqrt(3) / 2) * a, -(3 / 2) * a}   // s6
+    {(sqrt3 * a), 0},                   // s1
+    {(sqrt3 / 2) * a, (3.0 / 2) * a},   // s2
+    {-(sqrt3 / 2) * a, (3.0 / 2) * a},  // s3
+    {-sqrt3 * a, 0},                    // s4
+    {-(sqrt3 / 2) * a, -(3.0 / 2) * a}, // s5
+    {(sqrt3 / 2) * a, -(3.0 / 2) * a}   // s6
 
 };
 // Initialize the dictionary
@@ -37,46 +37,47 @@ void addEntry(struct Dictionary *dict, char key[], float value)
 }
 
 // this create the 6 spots with coordiantes regaring the sink not with the respect of the drone position
-void creatSpots(struct Dictionary *dict, const float Dx, const float Dy)
+void creatSpots(struct Dictionary *dict, float Dx, float Dy)
 {
     // calculated
     float DxDy2 = (Dx * Dx) + (Dy * Dy);
-    float DxDy3a2 = DxDy2 + 3 * a * a;
-    float sqDx = sqrt(3) * Dx;
-    float aDx = (2 * sqrt(3)) * Dx;
+    float DxDy3a2 = DxDy2 + (3 * a * a);
+    float sqDx = sqrt3 * Dx;
+    float aDx = (2 * sqrt3) * Dx;
 
     addEntry(dict, "s0", sqrt(DxDy2));
     addEntry(dict, "s1", sqrt(DxDy3a2 + a * aDx));
     addEntry(dict, "s2", sqrt(DxDy3a2 + a * (sqDx + (3 * Dy))));
     addEntry(dict, "s3", sqrt(DxDy3a2 + a * (3 * Dy - aDx)));
     addEntry(dict, "s4", sqrt(DxDy3a2 - aDx + 3 * a * a));
-    addEntry(dict, "s5", sqrt(DxDy3a2 - a * (aDx + 3 * Dy)));
+    addEntry(dict, "s5", sqrt(DxDy3a2 - a * (sqDx + (3 * Dy))));
     addEntry(dict, "s6", sqrt(DxDy3a2 - a * (3 * Dy - sqDx)));
 }
 
-void setDist(struct Dictionary *dict, const float Dx, const float Dy)
+void setDist(struct Dictionary *dict, float Dx, float Dy)
 {
     float DxDy2 = (Dx * Dx) + (Dy * Dy);
     float DxDy3a2 = DxDy2 + 3 * a * a;
-    float sqDx = sqrt(3) * Dx;
-    float aDx = (2 * sqrt(3)) * Dx;
+    float sqDx = sqrt3 * Dx;
+    float aDx = (2 * sqrt3) * Dx;
 
     for (int i = 0; i < dict->size; i++)
     {
         if (strcmp(dict->keys[i], "s0") == 0)
-            dict->distances[i] = sqrt(DxDy2);
+            dict->distances[i] = sqrt(abs(DxDy2));
         if (strcmp(dict->keys[i], "s1") == 0)
-            dict->distances[i] = sqrt(DxDy3a2 + a * aDx);
+            dict->distances[i] = sqrt(abs(DxDy3a2 + a * aDx));
         if (strcmp(dict->keys[i], "s2") == 0)
-            dict->distances[i] = sqrt(DxDy3a2 + a * (sqDx + (3 * Dy)));
+            dict->distances[i] = sqrt(abs(DxDy3a2 + a * (sqDx + (3 * Dy))));
         if (strcmp(dict->keys[i], "s3") == 0)
-            dict->distances[i] = sqrt(DxDy3a2 + a * (3 * Dy - aDx));
+            dict->distances[i] = sqrt(abs(DxDy3a2 + a * (3 * Dy - aDx)));
         if (strcmp(dict->keys[i], "s4") == 0)
-            dict->distances[i] = sqrt(DxDy3a2 - aDx + 3 * a * a);
+            dict->distances[i] = sqrt(abs(DxDy3a2 - aDx + 3 * a * a));
         if (strcmp(dict->keys[i], "s5") == 0)
-            dict->distances[i] = sqrt(DxDy3a2 - a * (aDx + 3 * Dy));
+            dict->distances[i] = sqrt(abs(DxDy3a2 - a * (sqDx + 3 * Dy)));
         if (strcmp(dict->keys[i], "s6") == 0)
-            dict->distances[i] = sqrt(DxDy3a2 - a * (3 * Dy - sqDx));
+            dict->distances[i] = sqrt(abs(DxDy3a2 - a * (3 * Dy - sqDx)));
+        // printf("    %s at distance %f\n ", dict->keys[i], dict->distances[i]);
     }
 }
 
@@ -243,6 +244,7 @@ void setPriorities(struct Dictionary *dict)
                 dict->v[i] = randomFloat((dict->w[i] * C + eps), (dict->w[i] + 1) * C); // spot is away  from the sink
             }
         }
+        // printf("spot %s, dis=%f , stat %s , num %d , prior %f \n", dict->keys[i], dict->distances[i], dict->Status[i], dict->w[i], dict->v[i]);
     }
 }
 
@@ -305,7 +307,7 @@ void set_num_drones_at_neighbors(Point points[], struct Dictionary *dict, Point 
     {
 
         count_drons = countPointsAtPosition(points, numPoints, currentPoint->x + DIR_VECTORS[j][0], currentPoint->y + DIR_VECTORS[j][1]);
-        printf(" point at (%f, %f ) has %d  drons at x %f, y %f\n", currentPoint->x, currentPoint->y, count_drons, currentPoint->x + DIR_VECTORS[j][0], currentPoint->y + DIR_VECTORS[j][1]);
+        // printf("neighbors S%d has %d  drons at x %f, y %f\n", j, count_drons, currentPoint->x + DIR_VECTORS[j][0], currentPoint->y + DIR_VECTORS[j][1]);
         if (count_drons != 0)
         {
             setStatus(dict, dict->keys[j], "o", count_drons); // dictionaries[i].w[j]
