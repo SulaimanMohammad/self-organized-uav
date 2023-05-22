@@ -1,20 +1,16 @@
 #include "expansion.h"
 
-// #define N 10 // Grid size
-
-// #define N 10 // Grid size
-
 // Define the unit vectors for each direction
 // which is the 6 negihboors with respect of the drone position
-#define sqrt3 1.732
+#define sqrt3 1.7
 float DIR_VECTORS[7][2] = {
-    {0, 0},                             // s0 // dont move stay
-    {(sqrt3 * a), 0},                   // s1
-    {(sqrt3 / 2) * a, (3.0 / 2) * a},   // s2
-    {-(sqrt3 / 2) * a, (3.0 / 2) * a},  // s3
-    {-sqrt3 * a, 0},                    // s4
-    {-(sqrt3 / 2) * a, -(3.0 / 2) * a}, // s5
-    {(sqrt3 / 2) * a, -(3.0 / 2) * a}   // s6
+    {0, 0},                                 // s0 // dont move stay
+    {(sqrt3 * a), 0},                       // s1
+    {(sqrt3 / 2.0) * a, (3.0 / 2.0) * a},   // s2
+    {-(sqrt3 / 2.0) * a, (3.0 / 2.0) * a},  // s3
+    {-sqrt3 * a, 0},                        // s4
+    {-(sqrt3 / 2.0) * a, -(3.0 / 2.0) * a}, // s5
+    {(sqrt3 / 2.0) * a, -(3.0 / 2.0) * a}   // s6
 
 };
 // Initialize the Neighbors
@@ -40,43 +36,43 @@ void addEntry(struct Neighbors *neighbors, char key[], float value)
 void creatSpots(struct Neighbors *neighbors, float Dx, float Dy)
 {
     // calculated
-    float DxDy2 = (Dx * Dx) + (Dy * Dy);
-    float DxDy3a2 = DxDy2 + (3 * a * a);
-    float sqDx = sqrt3 * Dx;
-    float aDx = (2 * sqrt3) * Dx;
+    float DxDy2 = round(((Dx * Dx) + (Dy * Dy)) * 100) / 100;
+    float DxDy3a2 = round((DxDy2 + (3 * a * a)) * 100) / 100;
+    float sqDx = round((sqrt3 * Dx) * 100) / 100;
+    float aDx = round(((2 * sqrt3) * Dx) * 100) / 100;
 
-    addEntry(neighbors, "s0", sqrt(DxDy2));
-    addEntry(neighbors, "s1", sqrt(DxDy3a2 + a * aDx));
-    addEntry(neighbors, "s2", sqrt(DxDy3a2 + a * (sqDx + (3 * Dy))));
-    addEntry(neighbors, "s3", sqrt(DxDy3a2 + a * (3 * Dy - aDx)));
-    addEntry(neighbors, "s4", sqrt(DxDy3a2 - aDx + 3 * a * a));
-    addEntry(neighbors, "s5", sqrt(DxDy3a2 - a * (sqDx + (3 * Dy))));
-    addEntry(neighbors, "s6", sqrt(DxDy3a2 - a * (3 * Dy - sqDx)));
+    addEntry(neighbors, "s0", round(sqrt(DxDy2) * 100) / 100);
+    addEntry(neighbors, "s1", round(sqrt(DxDy3a2 + a * aDx) * 100) / 100);
+    addEntry(neighbors, "s2", round(sqrt(DxDy3a2 + a * (sqDx + (3 * Dy))) * 100) / 100);
+    addEntry(neighbors, "s3", round(sqrt(DxDy3a2 + a * (3 * Dy - aDx)) * 100) / 100);
+    addEntry(neighbors, "s4", round(sqrt(DxDy3a2 - aDx + 3 * a * a) * 100) / 100);
+    addEntry(neighbors, "s5", round(sqrt(DxDy3a2 - a * (sqDx + (3 * Dy))) * 100) / 100);
+    addEntry(neighbors, "s6", round(sqrt(DxDy3a2 - a * (3 * Dy - sqDx)) * 100) / 100);
 }
 
 void setDist(struct Neighbors *neighbors, float Dx, float Dy)
 {
-    float DxDy2 = (Dx * Dx) + (Dy * Dy);
-    float DxDy3a2 = DxDy2 + 3 * a * a;
-    float sqDx = sqrt3 * Dx;
-    float aDx = (2 * sqrt3) * Dx;
+    float DxDy2 = round(((Dx * Dx) + (Dy * Dy)) * 100) / 100;
+    float DxDy3a2 = round((DxDy2 + (3 * a * a)) * 100) / 100;
+    float sqDx = round((sqrt3 * Dx) * 100) / 100;
+    float aDx = round(((2 * sqrt3) * Dx) * 100) / 100;
 
     for (int i = 0; i < neighbors->size; i++)
     {
         if (strcmp(neighbors->keys[i], "s0") == 0)
-            neighbors->distances[i] = sqrt(abs(DxDy2));
+            neighbors->distances[i] = round(sqrt(DxDy2) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s1") == 0)
-            neighbors->distances[i] = sqrt(abs(DxDy3a2 + a * aDx));
+            neighbors->distances[i] = round(sqrt(DxDy3a2 + a * aDx) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s2") == 0)
-            neighbors->distances[i] = sqrt(abs(DxDy3a2 + a * (sqDx + (3 * Dy))));
+            neighbors->distances[i] = round(sqrt(DxDy3a2 + a * (sqDx + (3 * Dy))) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s3") == 0)
-            neighbors->distances[i] = sqrt(abs(DxDy3a2 + a * (3 * Dy - aDx)));
+            neighbors->distances[i] = round(sqrt(DxDy3a2 + a * (3 * Dy - aDx)) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s4") == 0)
-            neighbors->distances[i] = sqrt(abs(DxDy3a2 - aDx + 3 * a * a));
+            neighbors->distances[i] = round(sqrt(DxDy3a2 - aDx + 3 * a * a) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s5") == 0)
-            neighbors->distances[i] = sqrt(abs(DxDy3a2 - a * (sqDx + 3 * Dy)));
+            neighbors->distances[i] = round(sqrt(DxDy3a2 - a * (sqDx + (3 * Dy))) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s6") == 0)
-            neighbors->distances[i] = sqrt(abs(DxDy3a2 - a * (3 * Dy - sqDx)));
+            neighbors->distances[i] = round(sqrt(DxDy3a2 - a * (3 * Dy - sqDx)) * 100) / 100;
         // printf("    %s at distance %f\n ", neighbors->keys[i], neighbors->distances[i]);
     }
 }
@@ -176,7 +172,7 @@ void findPriority(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], 
     for (int i = 0; i < neighbors->size; i++)
     {
         // If the distance is positive and less than the current minimum, update the minimum and reset the result array
-        if (neighbors->v[i] > 0 && (minDistance < 0 || neighbors->v[i] < minDistance))
+        if (neighbors->v[i] >= 0 && (minDistance < 0 || neighbors->v[i] < minDistance))
         {
             minDistance = neighbors->v[i];
             count = 0;
@@ -215,7 +211,8 @@ void setPriorities(struct Neighbors *neighbors)
     findMinDistances(neighbors, closeSink, &closeSinkSize);
 
     // drone now will set the value of vi that is assiged to each niegboor
-    float denom = (4.0 * getDist(neighbors, "s0")); //
+    // denom // distance between the place of the drone in position and the sink and it will be 0 if the drone is at the sink
+    float denom = (4.0 * getDist(neighbors, "s0"));
     for (int i = 0; i < neighbors->size; i++)
     {
         // if the spot is free
@@ -253,8 +250,9 @@ void initializeDrones(Drones drones[], int numdrones)
     // Initialize all drones at the center of the grid
     for (int i = 0; i < numdrones; i++)
     {
-        drones[i].x = 0.;  // randomFloat(0, 1);
-        drones[i].y = 0.0; // randomFloat(0, 1);
+        drones[i].x = 0.0;   // randomFloat(0, 1);
+        drones[i].y = 0.0;   // randomFloat(0, 1);
+        drones[i].state = 0; // free
     }
 }
 
@@ -272,6 +270,8 @@ void saveDrones(Drones drones[], int numdrones, FILE *fp)
     for (int i = 0; i < numdrones; i++)
     {
         fprintf(fp, "(");
+        fprintf(fp, "%d", i);
+        fprintf(fp, ", ");
         fprintf(fp, "%.6f", drones[i].x);
         fprintf(fp, ", ");
         fprintf(fp, "%.6f", drones[i].y);
@@ -296,8 +296,8 @@ int countdronesAtPosition(Drones drones[], int numdrones, float x, float y)
 void moveDrones(Drones *Drones, enum Direction dir)
 {
     // Move the given Drones a fixed distance in one of the 6 directions
-    Drones->x += DIR_VECTORS[dir][0];
-    Drones->y += DIR_VECTORS[dir][1];
+    Drones->x = round((Drones->x + DIR_VECTORS[dir][0]) * 100) / 100;
+    Drones->y = round((Drones->y + DIR_VECTORS[dir][1]) * 100) / 100;
 }
 
 void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones)
@@ -308,7 +308,7 @@ void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, D
 
         count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
         // printf("neighbors S%d has %d  drons at x %f, y %f\n", j, count_drons, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
-        if (count_drons != 0)
+        if (count_drons > 0)
         {
             setStatus(neighbors, neighbors->keys[j], "o", count_drons); // neighborsionaries[i].w[j]
         }
@@ -318,4 +318,20 @@ void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, D
         }
     }
     count_drons = 0;
+}
+
+void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones)
+{
+    int count_drons = 0;
+
+    count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
+    // printf("current drone S%d has %d  drons at x %f, y %f\n\n", 0, count_drons, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
+    if (count_drons > 1) // alone
+    {
+        currentDrones->state = 1; // it is not alone
+    }
+    else
+    {
+        currentDrones->state = 0; // it is alone
+    }
 }
