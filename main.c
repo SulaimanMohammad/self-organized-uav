@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     FILE *fp;
     fp = fopen("output.txt", "w");
-    srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
+    // srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
 
     if (argc < 2)
     {
@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     {
         int dir = randomInt(1, 6); // remeber dir are from 0-6 but here number is between 1-6 so no drone start at the sink because that will lead to worng pripority
         moveDrones(&drones[i], dir);
+        append_new_step(&drones[i], dir);
         // printf("drone %d , went to s%d\n", i, dir);
     }
     saveDrones(drones, numdrones, fp);
@@ -53,6 +54,7 @@ int main(int argc, char *argv[])
     int PrioritySize;
     int dir;
     int num_drone_alone = 0;
+    int steps = 0;
     while (num_drone_alone < numdrones)
     {
         // each point now need to check around then move then the second oen do that
@@ -62,6 +64,7 @@ int main(int argc, char *argv[])
         {
             check_drone_spot(drones, &drones[i], numdrones); // check if the drone is alone or not
             // printf("---------drone %d at (%f,%f) has state %d---------\n", i, drones[i].x, drones[i].y, drones[i].state);
+            // printf("---------drone %d --------\n", i);
 
             if (drones[i].state == 1) // free to move and there are many drone in the same place
             {
@@ -77,7 +80,10 @@ int main(int argc, char *argv[])
 
                 sscanf(Priority[0], "s%d", &dir);
                 moveDrones(&drones[i], dir);
+                append_new_step(&drones[i], dir);
+                // printf("dones go to %d\n ", dir);
                 setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
+                // steps++;
             }
             else // if the drone is alone do not move
             {
@@ -85,11 +91,21 @@ int main(int argc, char *argv[])
             }
         }
         saveDrones(drones, numdrones, fp);
-
-        // printf("num_drone_alone %d\n\n\n", num_drone_alone);
     }
-    saveDrones(drones, numdrones, fp);
+    // printf("%d", steps);
+    //  After the Drones spreat now it is time to see if it is free or no
+    for (int i = 0; i < numdrones; i++)
+    {
+        // printf("\n--- drone %d-----\n", i);
+        update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
+        // countElementOccurrences(&drones[i]);
+        free(drones[i].direction_taken); // no need for it any more
+    }
+    // for (int i = 0; i < numdrones; i++)
+    // {
 
+    //     printf("\n--- drone %d----- at state %d \n", i, drones[i].state);
+    // }
     fclose(fp);
     return 0;
 }
