@@ -29,6 +29,9 @@ typedef struct Drones
     float y;
     int state;
     // alone=1 free=0 border=2 irrmovable=3
+    int num_steps;
+    int *direction_taken; // array contains the direction was taken
+
 } Drones;
 
 struct Neighbors
@@ -83,5 +86,8 @@ void moveDrones(Drones *Drones, enum Direction dir);
 
 void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
 void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones);
+void append_new_step(Drones *currentDrones, int dir);
+void update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
+int countElementOccurrences(const Drones *currentDrones);
 
 #endif
