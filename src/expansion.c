@@ -253,6 +253,8 @@ void initializeDrones(Drones drones[], int numdrones)
         drones[i].x = 0.0;   // randomFloat(0, 1);
         drones[i].y = 0.0;   // randomFloat(0, 1);
         drones[i].state = 0; // free
+        drones[i].num_steps = 0;
+        drones[i].direction_taken = (int *)malloc(0 * sizeof(int)); // allocate memoy
     }
 }
 
@@ -334,4 +336,158 @@ void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones)
     {
         currentDrones->state = 0; // it is alone
     }
+}
+
+void append_new_step(Drones *currentDrones, int dir)
+{
+    if (currentDrones->direction_taken == NULL)
+    {
+        // allocation error
+        printf("Error: Memory allocation failed.\n");
+    }
+    else
+    {
+        // Memory allocation was successful
+
+        // Add a new element to the dynamic array
+        currentDrones->num_steps = currentDrones->num_steps + 1; // Increase the number of steps
+        int *temp = (int *)realloc(currentDrones->direction_taken, (currentDrones->num_steps) * sizeof(int));
+
+        if (temp == NULL)
+        {
+            // Handle reallocation error
+            printf("Error: Memory reallocation failed.\n");
+        }
+        else
+        {
+            // Reallocation was successful
+            currentDrones->direction_taken = temp;
+            currentDrones->direction_taken[currentDrones->num_steps - 1] = dir; // Add the new element
+        }
+    }
+}
+
+void update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones)
+{
+    int count_drons = 0;
+    for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to w in neigboor of the Drones
+    {
+        count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
+    }
+    if (currentDrones->x == 0.0 && currentDrones->y == 0.0)
+    {
+        currentDrones->state = 3;
+    }
+    else if (count_drons == 6)
+    {
+        currentDrones->state = 0; // free state
+    }
+    else
+    { // check if the drone is border=2
+        int count_drons = -1;
+        int direction = countElementOccurrences(currentDrones);
+        switch (direction)
+        {
+        case 1: // most direction to s1 , then checl s1,s6, s2 to see the border
+            count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[1][0], currentDrones->y + DIR_VECTORS[1][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[2][0], currentDrones->y + DIR_VECTORS[2][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[6][0], currentDrones->y + DIR_VECTORS[6][1]);
+            if (count_drons < 3)
+                currentDrones->state = 2;
+            break;
+        case 2:
+            count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[2][0], currentDrones->y + DIR_VECTORS[2][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[3][0], currentDrones->y + DIR_VECTORS[3][1]);
+            if (count_drons < 3)
+                currentDrones->state = 2;
+            break;
+        case 3:
+            count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[3][0], currentDrones->y + DIR_VECTORS[3][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[2][0], currentDrones->y + DIR_VECTORS[2][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[4][0], currentDrones->y + DIR_VECTORS[4][1]);
+            if (count_drons < 3)
+                currentDrones->state = 2;
+            break;
+        case 4:
+            count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[3][0], currentDrones->y + DIR_VECTORS[3][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[5][0], currentDrones->y + DIR_VECTORS[5][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[4][0], currentDrones->y + DIR_VECTORS[4][1]);
+            if (count_drons < 3)
+                currentDrones->state = 2;
+            break;
+        case 5:
+            count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[6][0], currentDrones->y + DIR_VECTORS[6][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[5][0], currentDrones->y + DIR_VECTORS[5][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[4][0], currentDrones->y + DIR_VECTORS[4][1]);
+            if (count_drons < 3)
+                currentDrones->state = 2;
+            break;
+        case 6:
+            count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[6][0], currentDrones->y + DIR_VECTORS[6][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[5][0], currentDrones->y + DIR_VECTORS[5][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
+            if (count_drons < 3)
+                currentDrones->state = 2;
+            break;
+        default:
+            printf(" not border");
+            break;
+        }
+    }
+}
+
+// check how many times each direction is repeated and give more wight to the last one
+// return the most repeated after which will give idea about the direction of the expansion
+int countElementOccurrences(const Drones *currentDrones)
+{
+    // Find the maximum element in the direction_taken array
+    int max_element = 0;
+    for (int i = 0; i < currentDrones->num_steps; i++)
+    {
+        if (currentDrones->direction_taken[i] > max_element)
+        {
+            max_element = currentDrones->direction_taken[i];
+        }
+    }
+
+    // Create an array to store the frequencies
+    int *frequency_array = (int *)calloc(max_element + 1, sizeof(int));
+
+    if (frequency_array == NULL)
+    {
+        printf("Error: Memory allocation failed.\n");
+        return 0;
+    }
+
+    // Count the occurrences of each element
+    for (int i = 0; i < currentDrones->num_steps; i++)
+    {
+        // give the last step direction more wight and effect
+        if (i == currentDrones->num_steps - 1)
+        {
+            int current_element = currentDrones->direction_taken[i];
+            frequency_array[current_element] += 2;
+        }
+        else
+        {
+            int current_element = currentDrones->direction_taken[i];
+            frequency_array[current_element]++;
+        }
+    }
+
+    // Find the maximum occurrence count
+    int max_occurrence = 0;
+    int res = 0;
+    for (int i = 0; i <= max_element; i++)
+    {
+        if (frequency_array[i] > max_occurrence)
+        {
+            max_occurrence = frequency_array[i];
+            res = i;
+        }
+    }
+
+    free(frequency_array);
+    return res;
 }
