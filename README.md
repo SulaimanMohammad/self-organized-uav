@@ -42,3 +42,14 @@ Adding State= Alone.
     - With adding state alone:
         - any drone will check if it is alone in the place, if yes , then it will not move and this way the drones around Drone-A will stay fixed in their places so Drone-A will always consider them in calculating the priority.
         - in the example Drone-A will see itself not alone, in this way it should calculate the priorities and suppose it found that s4 is the one to go then it will go there, and since the drone there was in Alone state then it will stay and Drone-A should move and based on the priorities the spot where it is it will not be out of consideration because it has already another drone and based on the algorithm the priority is to ove to empty spots
+
+### find border
+- the drone will save the directions that it will take each time
+    - the last movement will be considered more important so it will have more weighted
+- count number of occurrence for each direction (with more wight for the last on)
+- take the one the most occurred as the path of expansion of the drone
+- As since we have 6 neighbors then we have 6 direction of expansion
+- To find the border each direction should see specific spots if they are empty then it is border
+    - those spots are showed in the fig
+    - based on this fig, if the dominate direction of a drone is towards s3 means that the drone mostly expanded in the second plane and in this way need to check s4,s3,s2 of the current position, if the neighbors are empty means that the drone is border
+![Alt text](https://github.com/SulaimanMohammad/self-organized-uav/blob/main/.vscode/border.png)
