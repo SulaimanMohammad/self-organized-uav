@@ -27,7 +27,8 @@ typedef struct Drones
 {
     float x;
     float y;
-    char stat; // free , border , irrmovable
+    int state;
+    // alone=1 free=0 border=2 irrmovable=3
 } Drones;
 
 struct Neighbors
@@ -81,5 +82,6 @@ int countdronesAtPosition(Drones drones[], int numdrones, float x, float y);
 void moveDrones(Drones *Drones, enum Direction dir);
 
 void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
+void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones);
 
 #endif
