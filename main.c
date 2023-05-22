@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     {
         int dir = randomInt(1, 6); // remeber dir are from 0-6 but here number is between 1-6 so no drone start at the sink because that will lead to worng pripority
         moveDrones(&drones[i], dir);
+        // printf("drone %d , went to s%d\n", i, dir);
     }
     saveDrones(drones, numdrones, fp);
 
@@ -51,30 +52,44 @@ int main(int argc, char *argv[])
     char Priority[MAX_SIZE][MAX_SIZE];
     int PrioritySize;
     int dir;
-    for (int k = 0; k < 8; k++)
+    int num_drone_alone = 0;
+    while (num_drone_alone < numdrones)
     {
         // each point now need to check around then move then the second oen do that
         // the ones before should be moved so the next one can detect the new position
+        num_drone_alone = 0;
         for (int i = 0; i < numdrones; i++)
         {
-            // printf("---------point %d at (%f,%f) ---------\n", i, drones[i].x, drones[i].y);
-            setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
+            check_drone_spot(drones, &drones[i], numdrones); // check if the drone is alone or not
+            // printf("---------drone %d at (%f,%f) has state %d---------\n", i, drones[i].x, drones[i].y, drones[i].state);
 
-            set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
-            setPriorities(&DroneNeighbors[i]);
+            if (drones[i].state == 1) // free to move and there are many drone in the same place
+            {
+                setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
 
-            findPriority(&DroneNeighbors[i], Priority, &PrioritySize); // that should return only one number, since there is also random number generator
-                                                                       // if the random numbering is not considered then there will be many possible solution
-                                                                       // and that if the spots has the same number of dron in it and using the [f(w,c,eps), f(w,c)[
-                                                                       // then same number will be choosed for pts has same drons
+                set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
+                setPriorities(&DroneNeighbors[i]);
 
-            // printf("point %d at (%f,%f) Go to  %s with distance %f and priort %f\n", i, drones[i].x, drones[i].y, Priority[0], getDist(&DroneNeighbors[i], Priority[0]), getPriority(&DroneNeighbors[i], Priority[0]));
-            sscanf(Priority[0], "s%d", &dir);
-            moveDrones(&drones[i], dir);
-            setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
+                findPriority(&DroneNeighbors[i], Priority, &PrioritySize); // that should return only one number, since there is also random number generator
+                                                                           // if the random numbering is not considered then there will be many possible solution
+                                                                           // and that if the spots has the same number of dron in it and using the [f(w,c,eps), f(w,c)[
+                                                                           // then same number will be choosed for pts has same drons
+
+                sscanf(Priority[0], "s%d", &dir);
+                moveDrones(&drones[i], dir);
+                setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
+            }
+            else // if the drone is alone do not move
+            {
+                num_drone_alone++;
+            }
         }
         saveDrones(drones, numdrones, fp);
+
+        // printf("num_drone_alone %d\n\n\n", num_drone_alone);
     }
+    saveDrones(drones, numdrones, fp);
+
     fclose(fp);
     return 0;
 }
