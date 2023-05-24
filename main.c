@@ -23,6 +23,11 @@ int main(int argc, char *argv[])
             }
         }
     }
+
+    int targets_size = numdrones * 0.25;
+    int targets[targets_size];
+    generate_random_targets(numdrones, targets_size, targets);
+
     // for the neigboor
     // create a Neighbors for the neighboor ( one for each drone, so each drone has data of the s1-s6)
     struct Neighbors DroneNeighbors[numdrones];
@@ -62,11 +67,8 @@ int main(int argc, char *argv[])
         num_drone_alone = 0;
         for (int i = 0; i < numdrones; i++)
         {
-            check_drone_spot(drones, &drones[i], numdrones); // check if the drone is alone or not
-            // printf("---------drone %d at (%f,%f) has state %d---------\n", i, drones[i].x, drones[i].y, drones[i].state);
-            // printf("---------drone %d --------\n", i);
-
-            if (drones[i].state == 1) // free to move and there are many drone in the same place
+            check_drone_spot(drones, &drones[i], numdrones); // check if the drone is alone or nots
+            if (drones[i].state == 1)                        // free to move and there are many drone in the same place
             {
                 setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
 
@@ -81,9 +83,7 @@ int main(int argc, char *argv[])
                 sscanf(Priority[0], "s%d", &dir);
                 moveDrones(&drones[i], dir);
                 append_new_step(&drones[i], dir);
-                // printf("dones go to %d\n ", dir);
                 setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
-                // steps++;
             }
             else // if the drone is alone do not move
             {
@@ -92,20 +92,14 @@ int main(int argc, char *argv[])
         }
         saveDrones(drones, numdrones, fp);
     }
-    // printf("%d", steps);
     //  After the Drones spreat now it is time to see if it is free or no
     for (int i = 0; i < numdrones; i++)
     {
-        // printf("\n--- drone %d-----\n", i);
-        update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
-        // countElementOccurrences(&drones[i]);
+        find_border_update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
+        set_state_target_check(&drones[i], targets, targets_size);
         free(drones[i].direction_taken); // no need for it any more
     }
-    // for (int i = 0; i < numdrones; i++)
-    // {
-
-    //     printf("\n--- drone %d----- at state %d \n", i, drones[i].state);
-    // }
+    saveDrones(drones, numdrones, fp);
     fclose(fp);
     return 0;
 }
