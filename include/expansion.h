@@ -25,10 +25,11 @@ extern float DIR_VECTORS[7][2];
 
 typedef struct Drones
 {
+    int id;
     float x;
     float y;
     int state;
-    // alone=1 free=0 border=2 irrmovable=3
+    // alone=1 free=0 border=2 irrmovable=3 // irrovable and border= 4
     int num_steps;
     int *direction_taken; // array contains the direction was taken
 
@@ -43,6 +44,12 @@ struct Neighbors
     int size;
     int w[MAX_SIZE]; // you needed to be incremented when a new arriver
 };
+
+typedef struct Target
+{
+    float x;
+    float y;
+} Target;
 
 // Initialize the Neighbors
 void initNeighbors(struct Neighbors *neighbors);
@@ -87,7 +94,10 @@ void moveDrones(Drones *Drones, enum Direction dir);
 void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
 void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones);
 void append_new_step(Drones *currentDrones, int dir);
-void update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
+void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
 int countElementOccurrences(const Drones *currentDrones);
+void generate_random_targets(int n, int count, int *targets);
+void set_state_target_check(Drones *currentDrones, int *targets, int targets_size);
+int target_in_area(Drones *currentDrones, Target *targets, int targets_num, int distance, int length);
 
 #endif

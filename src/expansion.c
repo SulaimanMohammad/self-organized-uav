@@ -1,5 +1,4 @@
 #include "expansion.h"
-
 // Define the unit vectors for each direction
 // which is the 6 negihboors with respect of the drone position
 #define sqrt3 1.7
@@ -250,6 +249,7 @@ void initializeDrones(Drones drones[], int numdrones)
     // Initialize all drones at the center of the grid
     for (int i = 0; i < numdrones; i++)
     {
+        drones[i].id = i;
         drones[i].x = 0.0;   // randomFloat(0, 1);
         drones[i].y = 0.0;   // randomFloat(0, 1);
         drones[i].state = 0; // free
@@ -277,6 +277,8 @@ void saveDrones(Drones drones[], int numdrones, FILE *fp)
         fprintf(fp, "%.6f", drones[i].x);
         fprintf(fp, ", ");
         fprintf(fp, "%.6f", drones[i].y);
+        fprintf(fp, ", ");
+        fprintf(fp, "%d", drones[i].state);
         fprintf(fp, "),");
     }
     fprintf(fp, "\n");
@@ -367,7 +369,7 @@ void append_new_step(Drones *currentDrones, int dir)
     }
 }
 
-void update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones)
+void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones)
 {
     int count_drons = 0;
     for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to w in neigboor of the Drones
@@ -490,4 +492,214 @@ int countElementOccurrences(const Drones *currentDrones)
 
     free(frequency_array);
     return res;
+}
+
+// generate targets
+void generate_random_targets(int n, int count, int *targets)
+{
+    if (count > n)
+    {
+        printf("Error: Count cannot be greater than n.\n");
+        return;
+    }
+
+    srand(time(NULL));
+    int i = 0;
+    while (i < count)
+    {
+        int num = rand() % n + 1;
+
+        // Check if the generated number already exists in the array
+        int j;
+        for (j = 0; j < i; j++)
+        {
+            if (targets[j] == num)
+                break;
+        }
+
+        // If the number is unique, add it to the array
+        if (j == i)
+        {
+            targets[i] = num;
+            i++;
+        }
+    }
+}
+
+void set_state_target_check(Drones *currentDrones, int *targets, int targets_size)
+{
+    for (int i = 0; i < targets_size; i++)
+    {
+        if (currentDrones->id == targets[i])
+        {
+            if (currentDrones->state == 1) // drone is in free state
+                currentDrones->state = 3;  // drone is irrmovable
+            if (currentDrones->state == 2) // drone is in border state
+                currentDrones->state = 4;  // drone is irrmovable and border
+        }
+    }
+}
+// scan hexagon by goning in smaller hex
+int target_in_area(Drones *currentDrones, Target *targets, int targets_num, int distance, int length)
+{
+    int found = 0;
+    float radius = a;
+    double epsilon = 0.0000001;
+    float angle = 0.0;
+    float angleIncrement = 60.0; // Angle between vertices
+    double nextY, nextX, deltx, deltY, total_distance, directionX, directionY, incrementX, incrementY = 0;
+    // Start at the center
+    double currentY = currentDrones->y;
+    double currentX = currentDrones->x;
+    int i = 0;
+    while (radius - distance > 0)
+    {
+        // Move to the first vertex ( 12 oclock)
+        currentY = round(currentDrones->y + (radius - distance) * cos(angle * 3.14 / 180.0) * 100) / 100;
+        currentX = round(currentDrones->x + (radius - distance) * sin(angle * 3.14 / 180.0) * 100) / 100;
+
+        for (int j = 0; j < 6; j++)
+        {
+            // Calculate the coordinates of the next neighboring vertex
+            angle += angleIncrement;
+            nextY = round(currentDrones->y + (radius - distance) * cos(angle * 3.14 / 180.0) * 100) / 100;
+            nextX = round(currentDrones->x + (radius - distance) * sin(angle * 3.14 / 180.0) * 100) / 100;
+
+            deltx = round((nextX - currentX) * 100) / 100;
+            deltY = round((nextY - currentY) * 100) / 100;
+            total_distance = round(sqrt(deltx * deltx + deltY * deltY) * 100) / 100;
+            directionX = round((deltx / total_distance) * 100) / 100;
+            directionY = round((deltY / total_distance) * 100) / 100;
+            incrementX = round(directionX * length * 100) / 100;
+            incrementY = round(directionY * length * 100) / 100;
+
+            // printf("j= %d go (%f, %f) to (%f,%f) with dirx= %f, diry=%f icx= %f, incy= %f\n\n\n",j,currentX, currentY,nextX,nextY,directionX,directionY, incrementX, incrementY );
+
+            if (directionX > 0 && directionY < 0)
+            {
+                while (currentX <= nextX && currentY >= nextY)
+                {
+                    currentY += incrementY;
+                    currentX += incrementX;
+                    // printf("(%d, %f, %f, %d),", i, currentX, currentY, 0);
+                    for (int k = 0; k < targets_num; k++)
+                    {
+                        // printf("tx= %f , x %f, ty=%f ,y%f \n", targets[k].x, currentX, targets[k].y, currentY);
+
+                        if (currentX == targets[k].x && currentY == targets[k].y)
+                        {
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (directionX < epsilon && directionY < 0)
+            {
+                while (currentX == nextX && currentY >= nextY)
+                {
+                    currentY += incrementY;
+                    currentX += incrementX;
+
+                    for (int k = 0; k < targets_num; k++)
+                    {
+                        // printf("tx %f, ty%f \n", targets[k].x, targets[k].y);
+
+                        if (currentX == targets[k].x && currentY == targets[k].y)
+                        {
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (directionX < 0 && directionY < 0)
+            {
+                while (currentX >= nextX && currentY >= nextY)
+                {
+                    currentY += incrementY;
+                    currentX += incrementX;
+
+                    for (int k = 0; k < targets_num; k++)
+                    {
+                        // printf("tx %f, ty%f \n", targets[k].x, targets[k].y);
+
+                        if (currentX == targets[k].x && currentY == targets[k].y)
+                        {
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (directionX < 0 && directionY > 0)
+            {
+                while (currentX >= nextX && currentY <= nextY)
+                {
+                    currentY += incrementY;
+                    currentX += incrementX;
+
+                    for (int k = 0; k < targets_num; k++)
+                    {
+                        // printf("tx %f, ty%f \n", targets[k].x, targets[k].y);
+
+                        if (currentX == targets[k].x && currentY == targets[k].y)
+                        {
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (directionX < epsilon && directionY > 0)
+            {
+                while (currentX == nextX && currentY <= nextY)
+                {
+                    currentY += incrementY;
+                    currentX += incrementX;
+
+                    for (int k = 0; k < targets_num; k++)
+                    {
+                        // printf("tx %f, ty%f \n", targets[k].x, targets[k].y);
+
+                        if (currentX == targets[k].x && currentY == targets[k].y)
+                        {
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (directionX > 0 && directionY > 0)
+            {
+                while (currentX <= nextX && currentY <= nextY)
+                {
+                    currentY += incrementY;
+                    currentX += incrementX;
+
+                    for (int k = 0; k < targets_num; k++)
+                    {
+                        // printf("tx %f, ty%f \n", targets[k].x, targets[k].y);
+
+                        if (currentX == targets[k].x && currentY == targets[k].y)
+                        {
+                            found = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            currentY = nextY;
+            currentX = nextX;
+        }
+        radius = radius - distance;
+        i++;
+    }
+    return found;
+
+    // // Return to the center
+    // currentX = centerX;
+    // currentY = centerY;
+    // printf("(%f, %f)\n", currentX, currentY);
 }
