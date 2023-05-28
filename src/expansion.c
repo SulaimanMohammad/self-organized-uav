@@ -398,7 +398,7 @@ void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors
                 currentDrones->state = 2;
             break;
         case 2:
-            count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
+            count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[1][0], currentDrones->y + DIR_VECTORS[1][1]);
             count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[2][0], currentDrones->y + DIR_VECTORS[2][1]);
             count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[3][0], currentDrones->y + DIR_VECTORS[3][1]);
             if (count_drons < 3)
@@ -428,7 +428,7 @@ void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors
         case 6:
             count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[6][0], currentDrones->y + DIR_VECTORS[6][1]);
             count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[5][0], currentDrones->y + DIR_VECTORS[5][1]);
-            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
+            count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[1][0], currentDrones->y + DIR_VECTORS[1][1]);
             if (count_drons < 3)
                 currentDrones->state = 2;
             break;
