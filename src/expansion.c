@@ -43,8 +43,8 @@ void creatSpots(struct Neighbors *neighbors, float Dx, float Dy)
     addEntry(neighbors, "s0", round(sqrt(DxDy2) * 100) / 100);
     addEntry(neighbors, "s1", round(sqrt(DxDy3a2 + a * aDx) * 100) / 100);
     addEntry(neighbors, "s2", round(sqrt(DxDy3a2 + a * (sqDx + (3 * Dy))) * 100) / 100);
-    addEntry(neighbors, "s3", round(sqrt(DxDy3a2 + a * (3 * Dy - aDx)) * 100) / 100);
-    addEntry(neighbors, "s4", round(sqrt(DxDy3a2 - aDx + 3 * a * a) * 100) / 100);
+    addEntry(neighbors, "s3", round(sqrt(DxDy3a2 + a * (3 * Dy - sqDx)) * 100) / 100);
+    addEntry(neighbors, "s4", round(sqrt(DxDy3a2 - aDx*a) * 100) / 100);
     addEntry(neighbors, "s5", round(sqrt(DxDy3a2 - a * (sqDx + (3 * Dy))) * 100) / 100);
     addEntry(neighbors, "s6", round(sqrt(DxDy3a2 - a * (3 * Dy - sqDx)) * 100) / 100);
 }
@@ -65,9 +65,9 @@ void setDist(struct Neighbors *neighbors, float Dx, float Dy)
         if (strcmp(neighbors->keys[i], "s2") == 0)
             neighbors->distances[i] = round(sqrt(DxDy3a2 + a * (sqDx + (3 * Dy))) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s3") == 0)
-            neighbors->distances[i] = round(sqrt(DxDy3a2 + a * (3 * Dy - aDx)) * 100) / 100;
+            neighbors->distances[i] = round(sqrt(DxDy3a2 + a * (3 * Dy - sqDx)) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s4") == 0)
-            neighbors->distances[i] = round(sqrt(DxDy3a2 - aDx + 3 * a * a) * 100) / 100;
+            neighbors->distances[i] = round(sqrt(DxDy3a2 - aDx*a) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s5") == 0)
             neighbors->distances[i] = round(sqrt(DxDy3a2 - a * (sqDx + (3 * Dy))) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s6") == 0)
