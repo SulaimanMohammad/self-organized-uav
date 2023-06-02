@@ -60,6 +60,8 @@ int main(int argc, char *argv[])
     int dir;
     int num_drone_alone = 0;
     int steps = 0;
+    // state=1 not alone
+    // state = 0 it is alone and free
     while (num_drone_alone < numdrones)
     {
         // each point now need to check around then move then the second oen do that
@@ -68,7 +70,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < numdrones; i++)
         {
             check_drone_spot(drones, &drones[i], numdrones); // check if the drone is alone or nots
-            if (drones[i].state == 1)                        // free to move and there are many drone in the same place
+            if (drones[i].state == 1)                        // to move and there are many drone in the same place
             {
                 setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
 
