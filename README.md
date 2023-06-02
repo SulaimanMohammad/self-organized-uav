@@ -59,7 +59,7 @@ Adding State= Alone.
 ### Forming The border Process of ending the expansion
 
 Consider this situation:
-![Alt text](https://github.com/SulaimanMohammad/self-organized-uav/blob/main/.vscode/end_expan.png)
+<img src="https://github.com/SulaimanMohammad/self-organized-uav/blob/main/.vscode/end_expan.png" alt="Alt text" width="70%" height="70%">
 - Drone B is alone for now and based on the calculation and unoccupied neighbor, then Drone B can be considered as a candidates to be part of the border.
 - BUT: Drone A is in the way ti pass to point C which makes B not a border anymore and  Drone A should be.
 - To solve the forming the border while the expansion still in process and while the drones do not know the states of all the other drones.
