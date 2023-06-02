@@ -43,13 +43,37 @@ Adding State= Alone.
         - any drone will check if it is alone in the place, if yes , then it will not move and this way the drones around Drone-A will stay fixed in their places so Drone-A will always consider them in calculating the priority.
         - in the example Drone-A will see itself not alone, in this way it should calculate the priorities and suppose it found that s4 is the one to go then it will go there, and since the drone there was in Alone state then it will stay and Drone-A should move and based on the priorities the spot where it is it will not be out of consideration because it has already another drone and based on the algorithm the priority is to ove to empty spots
 
-## Find border
-- the drone will save the directions that it will take each time
+## Find border and end the expansion
+### Border candidate
+- First the drone should be in "Alone" state
+- Drone will save the directions that it will take each time
     - the last movement will be considered more important so it will have more weighted
-- count number of occurrence for each direction (with more wight for the last on)
-- take the one the most occurred as the path of expansion of the drone
-- As since we have 6 neighbors then we have 6 direction of expansion
-- To find the border each direction should see specific spots if they are empty then it is border
+- Count number of occurrence for each direction (with more wight for the last on)
+- Take the one the most occurred as the path of expansion of the drone
+- Since we have 6 neighbors then we have 6 direction of expansion
+- To find the border each direction should see specific spots if they are empty then it is border candidate
     - those spots are showed in the fig
-    - based on this fig, if the dominate direction of a drone is towards s3 means that the drone mostly expanded in the second plane and in this way need to check s4,s3,s2 of the current position, if the neighbors are empty means that the drone is border
+    - based on this fig, if the dominate direction of a drone is towards s3 means that the drone mostly expanded in the second plane and in this way need to check s4,s3,s2 of the current position, if the neighbors are empty means that the drone is border candidates
 ![Alt text](https://github.com/SulaimanMohammad/self-organized-uav/blob/main/.vscode/border.png)
+
+### Forming The border Process of ending the expansion
+Consider this situation:
+![Alt text](https://github.com/SulaimanMohammad/self-organized-uav/blob/main/.vscode/end_expan.png)
+- Drone B is alone for now and based on the calculation and unoccupied neighbor, then Drone B can be considered as a candidates to be part of the border.
+- BUT: Drone A is in the way ti pass to point C which makes B not a border anymore and  Drone A should be.
+- To solve the forming the border while the expansion still in process and while the drones do not know the states of all the other drones.
+
+In the paper :  Otherwise, drone changes to border state and sends a message to a neighboring drone following the right- hand rule. Starting from the empty zone.
+
+That is should change to: the drone will go to the state of border just after the circle is completed and the check is done as follow:
+
+1.  Each considered as a candidates to be part of the border (based on the unoccupied neighbors)  will stay just in Alone state, then it will start the method of exchanging massages
+    - the massage will contain the ID of the drone that started the circle ( in the example before message should contain drone B id suppose id=10)
+2. Each drone that receive the message in the circle will keep the id ( id=10) of the drone that launched the procedure
+3. when the circle is completed the drone that started the process ( drone B)  will receive back the messages.
+    - BUT notice: before the drone goes to border state need to check that no drones occupied neighbors spots,  then the drone can be free instead of border during the time the messages are circled.
+        - means if ( Drone A) moved to spot C then even if ( Drone B) received back the message from the circle it will drop it and stay in the statue Alone not border
+        - And in this way Drone A will start allover the procedure
+4. The drone that will have a completed circle of communication and also still meeting the requirement of being alone and unoccupied spots in the direction of expansion then this drone will be the one that send a broadcast message announcing the end of the expansion. The message of ending Contains Also the ID of the drone that send that broadcast.
+5. The drones those are in situation as candidates to be part of the border and receive the broadcast message with the ID they compare that ID with the one they saved   in step 2 which mean that they where part of the circle, so they check that they still meet the requirements and change to border state.
+    - this can reduce the amount of messaging. and ensure that any drone was in the completed circle of communication is a part of the border
