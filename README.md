@@ -70,7 +70,7 @@ That is should change to: the drone will go to the state of border just after th
 
 1.  Each considered as a candidates to be part of the border (based on the unoccupied neighbors)  will stay just in Alone state, then it will start the method of exchanging massages
     - the massage will contain the ID of the drone that started the circle ( in the example before message should contain drone B id suppose id=10)
-2. Each drone that receive the message in the circle will keep the id ( id=10) of the drone that launched the procedure
+2. Each drone that receive the message in the circle will keep the id ( id=10) of the drone that launched the procedure if the drone is Border candidate and drop the message if it is in other state.
 3. when the circle is completed the drone that started the process ( drone B)  will receive back the messages.
     - BUT notice: before the drone goes to border state need to check that no drones occupied neighbors spots,  then the drone can be free instead of border during the time the messages are circled.
         - means if ( Drone A) moved to spot C then even if ( Drone B) received back the message from the circle it will drop it and stay in the statue Alone not border
