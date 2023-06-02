@@ -57,6 +57,7 @@ Adding State= Alone.
 ![Alt text](https://github.com/SulaimanMohammad/self-organized-uav/blob/main/.vscode/border.png)
 
 ### Forming The border Process of ending the expansion
+
 Consider this situation:
 ![Alt text](https://github.com/SulaimanMohammad/self-organized-uav/blob/main/.vscode/end_expan.png)
 - Drone B is alone for now and based on the calculation and unoccupied neighbor, then Drone B can be considered as a candidates to be part of the border.
