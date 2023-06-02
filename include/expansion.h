@@ -29,7 +29,7 @@ typedef struct Drones
     float x;
     float y;
     int state;
-    // alone=1 free=0 border=2 irrmovable=3 // irrovable and border= 4
+    // alone=0 free=1 border=2 irrmovable=3 // irrovable and border= 4
     int num_steps;
     int *direction_taken; // array contains the direction was taken
 

@@ -330,7 +330,7 @@ void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones)
 
     count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
     // printf("current drone S%d has %d  drons at x %f, y %f\n\n", 0, count_drons, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
-    if (count_drons > 1) // alone
+    if (count_drons > 1)
     {
         currentDrones->state = 1; // it is not alone
     }
@@ -386,6 +386,7 @@ void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors
     }
     else
     { // check if the drone is border=2
+        // check if there are less than 3 spot occupied in the direction of the expansion
         int count_drons = -1;
         int direction = countElementOccurrences(currentDrones);
         switch (direction)
