@@ -162,7 +162,7 @@ void findMinDistances(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZ
     *resultSize = count;
 }
 
-// return the key of object in the minimum distance
+// return the key of object in the max distance
 void findMaxDistances(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], int *resultSize)
 {
     float maxDistance = -1.0;
