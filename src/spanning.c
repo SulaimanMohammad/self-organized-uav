@@ -40,10 +40,10 @@ void set_state_target_check(Drones *currentDrones, Target *targets, int targets_
     {
         if (currentDrones->x == targets[i].x && currentDrones->y == targets[i].y)
         {
-            if (currentDrones->state == 0) // drone is in free state
-                currentDrones->state = 3;  // drone is irrmovable
-            if (currentDrones->state == 2) // drone is in border state
-                currentDrones->state = 4;  // drone is irrmovable and border
+            if (currentDrones->state == 0 || currentDrones->state == 1) // drone is in free or alone state
+                currentDrones->state = 3;                               // drone is irrmovable
+            if (currentDrones->state == 2)                              // drone is in border state
+                currentDrones->state = 4;                               // drone is irrmovable and border
         }
     }
 }
@@ -69,7 +69,10 @@ void build_path_to_sink(struct Neighbors *neighbors, Drones *currentDrones, Dron
         {
             if (drones[i].x == currentDrones->x + DIR_VECTORS[dir][0] && drones[i].y == currentDrones->y + DIR_VECTORS[dir][1])
             {
-                drones[i].state = 3;
+                if (drones[i].state == 2) // it is border then make it border and irrmovable
+                    drones[i].state = 4;
+                else
+                    drones[i].state = 3;
                 return build_path_to_sink(neighbors, &drones[i], drones, numdrones);
             }
         }
@@ -98,7 +101,10 @@ void build_path_to_border(struct Neighbors *neighbors, Drones *currentDrones, Dr
         {
             if (drones[i].x == currentDrones->x + DIR_VECTORS[dir][0] && drones[i].y == currentDrones->y + DIR_VECTORS[dir][1])
             {
-                drones[i].state = 3;
+                if (drones[i].state == 2 || drones[i].state == 4) // it is border then make it border and irrmovable
+                    drones[i].state = 4;
+                else
+                    drones[i].state = 3;
                 return build_path_to_border(neighbors, &drones[i], drones, numdrones);
             }
         }
