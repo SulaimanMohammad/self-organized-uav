@@ -43,7 +43,7 @@ colors =  ['g', 'b', 'c', 'm', 'y', 'aqua', 'aquamarine', 'azure', 'bisque', 'bl
                    'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple',
                    'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown',
                    'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'springgreen',
-                   'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'yellow',
+                   'steelblue', 'tan', 'teal', 'thistle', 'turquoise', 'violet', 'wheat', 'yellow',
                    'yellowgreen'] * len(stage_points)# List of colors for each stage
 
 fig, ax = plt.subplots()
@@ -72,7 +72,8 @@ def update(frame):
     # drone is border and find tagrzt too 
     state_2_points_both = [(x[i], y[i]) for i in range(len(points)) if state[i] == 4]
     for point in state_2_points_both:
-        ax.scatter(point[0], point[1], facecolor=(0.5, 0.5, 0.5, 0.5), marker='o', s=500)
+        ax.scatter(point[0], point[1], facecolor=(0.5, 0.5, 0.5, 0.7), marker='o', s=600)
+        ax.scatter(point[0], point[1], facecolor=(1, 0.0, 0.0, 0.5), marker='o', s=400)
     
     free_points = [(x[i], y[i]) for i in range(len(points)) if state[i] ==0 or state[i] ==1]
     for point,i in zip(free_points, range(0,len(colors))) :
