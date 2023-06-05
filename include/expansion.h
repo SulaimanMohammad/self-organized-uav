@@ -72,6 +72,7 @@ char *getStatus(struct Neighbors *neighbors, char key[]);
 
 // return the key of object in the minimum distance
 void findMinDistances(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], int *resultSize);
+void findMaxDistances(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], int *resultSize);
 
 void findPriority(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], int *resultSize);
 
@@ -96,8 +97,6 @@ void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones);
 void append_new_step(Drones *currentDrones, int dir);
 void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
 int countElementOccurrences(const Drones *currentDrones);
-void generate_random_targets(int n, int count, int *targets);
-void set_state_target_check(Drones *currentDrones, int *targets, int targets_size);
 int target_in_area(Drones *currentDrones, Target *targets, int targets_num, int distance, int length);
 
 #endif
