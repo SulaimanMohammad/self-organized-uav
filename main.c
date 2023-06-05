@@ -1,11 +1,13 @@
 #include "expansion.h"
+#include "spanning.h"
+
 #include <stdio.h>
 int numdrones = 0;
 int main(int argc, char *argv[])
 {
     FILE *fp;
     fp = fopen("output.txt", "w");
-    // srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
+    srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
 
     if (argc < 2)
     {
@@ -25,8 +27,10 @@ int main(int argc, char *argv[])
     }
 
     int targets_size = numdrones * 0.25;
-    int targets[targets_size];
-    generate_random_targets(numdrones, targets_size, targets);
+    Target targets[targets_size];
+    // generates coordiantes of targets
+    generate_random_targets(targets, targets_size);
+    save_targes(targets, targets_size, fp);
 
     // for the neigboor
     // create a Neighbors for the neighboor ( one for each drone, so each drone has data of the s1-s6)
@@ -94,12 +98,19 @@ int main(int argc, char *argv[])
         }
         saveDrones(drones, numdrones, fp);
     }
-    //  After the Drones spreat now it is time to see if it is free or no
+    //  After the Drones spread,  now it is time to see if each drone is free or border
     for (int i = 0; i < numdrones; i++)
     {
         find_border_update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
         set_state_target_check(&drones[i], targets, targets_size);
         free(drones[i].direction_taken); // no need for it any more
+    }
+    saveDrones(drones, numdrones, fp);
+
+    for (int i = 0; i < numdrones; i++)
+    {
+        build_path_to_sink(&DroneNeighbors[i], &drones[i], drones, numdrones);
+        build_path_to_border(&DroneNeighbors[i], &drones[i], drones, numdrones);
     }
     saveDrones(drones, numdrones, fp);
     fclose(fp);
