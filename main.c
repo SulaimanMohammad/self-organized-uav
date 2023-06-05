@@ -106,13 +106,15 @@ int main(int argc, char *argv[])
         free(drones[i].direction_taken); // no need for it any more
     }
     saveDrones(drones, numdrones, fp);
-
+    // END of expansion phase
     for (int i = 0; i < numdrones; i++)
     {
         build_path_to_sink(&DroneNeighbors[i], &drones[i], drones, numdrones);
         build_path_to_border(&DroneNeighbors[i], &drones[i], drones, numdrones);
     }
     saveDrones(drones, numdrones, fp);
+    // End of spanning phase
+
     fclose(fp);
     return 0;
 }
