@@ -2,6 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 import matplotlib.patches as patches
+import os
+
+directory = 'animation_result'
+
+# Create the directory if it doesn't exist
+if not os.path.exists(directory):
+    os.makedirs(directory)
 
 with open("./build/output.txt", "r") as f:
     lines = f.readlines()
@@ -83,13 +90,13 @@ def update(frame):
     ax.grid(True)
     # Set the title for the current stage
     ax.set_title(f"Stage {frame+1}")
-    fig.savefig(f'frame_{frame}.jpg', dpi=300, format='jpg')
+    fig.savefig(os.path.join(directory, f'frame_{frame}.jpg'), dpi=300, format='jpg')
 
 
 # Create the animation object
 ani = FuncAnimation(fig, update, frames=len(points_list), interval=1000, repeat=False)
 
-ani.save('animation.mp4', fps=1)
+ani.save(os.path.join(directory, 'animation.mp4'), fps=1)
 plt.show()
 
 
