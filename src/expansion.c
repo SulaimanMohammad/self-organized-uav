@@ -44,7 +44,7 @@ void creatSpots(struct Neighbors *neighbors, float Dx, float Dy)
     addEntry(neighbors, "s1", round(sqrt(DxDy3a2 + a * aDx) * 100) / 100);
     addEntry(neighbors, "s2", round(sqrt(DxDy3a2 + a * (sqDx + (3 * Dy))) * 100) / 100);
     addEntry(neighbors, "s3", round(sqrt(DxDy3a2 + a * (3 * Dy - sqDx)) * 100) / 100);
-    addEntry(neighbors, "s4", round(sqrt(DxDy3a2 - aDx*a) * 100) / 100);
+    addEntry(neighbors, "s4", round(sqrt(DxDy3a2 - aDx * a) * 100) / 100);
     addEntry(neighbors, "s5", round(sqrt(DxDy3a2 - a * (sqDx + (3 * Dy))) * 100) / 100);
     addEntry(neighbors, "s6", round(sqrt(DxDy3a2 - a * (3 * Dy - sqDx)) * 100) / 100);
 }
@@ -67,7 +67,7 @@ void setDist(struct Neighbors *neighbors, float Dx, float Dy)
         if (strcmp(neighbors->keys[i], "s3") == 0)
             neighbors->distances[i] = round(sqrt(DxDy3a2 + a * (3 * Dy - sqDx)) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s4") == 0)
-            neighbors->distances[i] = round(sqrt(DxDy3a2 - aDx*a) * 100) / 100;
+            neighbors->distances[i] = round(sqrt(DxDy3a2 - aDx * a) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s5") == 0)
             neighbors->distances[i] = round(sqrt(DxDy3a2 - a * (sqDx + (3 * Dy))) * 100) / 100;
         if (strcmp(neighbors->keys[i], "s6") == 0)
@@ -153,6 +153,35 @@ void findMinDistances(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZ
         }
         // If the distance is equal to the current minimum, add the key to the result array
         else if (neighbors->distances[i] == minDistance)
+        {
+            strcpy(result[count], neighbors->keys[i]);
+            count++;
+        }
+    }
+
+    *resultSize = count;
+}
+
+// return the key of object in the minimum distance
+void findMaxDistances(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], int *resultSize)
+{
+    float maxDistance = -1.0;
+    int count = 0;
+
+    // Iterate over all entries in the Neighbors
+    for (int i = 0; i < neighbors->size; i++)
+    {
+
+        // If the distance is positive and less than the current minimum, update the minimum and reset the result array
+        if (neighbors->distances[i] > 0 && neighbors->distances[i] > maxDistance)
+        {
+            maxDistance = neighbors->distances[i];
+            count = 0;
+            strcpy(result[count], neighbors->keys[i]);
+            count++;
+        }
+        // If the distance is equal to the current minimum, add the key to the result array
+        else if (neighbors->distances[i] == maxDistance)
         {
             strcpy(result[count], neighbors->keys[i]);
             count++;
@@ -376,11 +405,13 @@ void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors
     {
         count_drons += countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
     }
+    // the drone at the sink is always irrmovable
+    // that i important for the connectivity
     if (currentDrones->x == 0.0 && currentDrones->y == 0.0)
     {
         currentDrones->state = 3;
     }
-    else if (count_drons == 6)
+    if (count_drons == 6)
     {
         currentDrones->state = 0; // free state
     }
@@ -495,51 +526,6 @@ int countElementOccurrences(const Drones *currentDrones)
     return res;
 }
 
-// generate targets
-void generate_random_targets(int n, int count, int *targets)
-{
-    if (count > n)
-    {
-        printf("Error: Count cannot be greater than n.\n");
-        return;
-    }
-
-    srand(time(NULL));
-    int i = 0;
-    while (i < count)
-    {
-        int num = rand() % n + 1;
-
-        // Check if the generated number already exists in the array
-        int j;
-        for (j = 0; j < i; j++)
-        {
-            if (targets[j] == num)
-                break;
-        }
-
-        // If the number is unique, add it to the array
-        if (j == i)
-        {
-            targets[i] = num;
-            i++;
-        }
-    }
-}
-
-void set_state_target_check(Drones *currentDrones, int *targets, int targets_size)
-{
-    for (int i = 0; i < targets_size; i++)
-    {
-        if (currentDrones->id == targets[i])
-        {
-            if (currentDrones->state == 1) // drone is in free state
-                currentDrones->state = 3;  // drone is irrmovable
-            if (currentDrones->state == 2) // drone is in border state
-                currentDrones->state = 4;  // drone is irrmovable and border
-        }
-    }
-}
 // scan hexagon by goning in smaller hex
 int target_in_area(Drones *currentDrones, Target *targets, int targets_num, int distance, int length)
 {
