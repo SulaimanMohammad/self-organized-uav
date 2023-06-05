@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
     FILE *fp;
     fp = fopen("output.txt", "w");
-    srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
+    // srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
 
     if (argc < 2)
     {
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < numdrones; i++)
         {
             check_drone_spot(drones, &drones[i], numdrones); // check if the drone is alone or nots
-            if (drones[i].state == 1)                        // to move and there are many drone in the same place
+            if (drones[i].state != 0)                        // drone is not alone    // to move and there are many drone in the same place
             {
                 setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
 
@@ -114,7 +114,6 @@ int main(int argc, char *argv[])
     }
     saveDrones(drones, numdrones, fp);
     // End of spanning phase
-
     fclose(fp);
     return 0;
 }
