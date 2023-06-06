@@ -1,5 +1,6 @@
 #include "expansion.h"
 #include "spanning.h"
+#include "balancing.h"
 
 #include <stdio.h>
 int numdrones = 0;
@@ -114,6 +115,16 @@ int main(int argc, char *argv[])
     }
     saveDrones(drones, numdrones, fp);
     // End of spanning phase
+
+    for (int i = 0; i < numdrones; i++)
+    {
+        if (drones[i].state == 1) // drone is free
+        {
+            move_free_until_border(&DroneNeighbors[i], drones, &drones[i], numdrones);
+        }
+    }
+    saveDrones(drones, numdrones, fp);
+
     fclose(fp);
     return 0;
 }
