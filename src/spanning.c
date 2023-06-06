@@ -22,7 +22,7 @@ void save_targes(Target *targets, int targets_size, FILE *fp)
     {
 
         fprintf(fp, "(");
-        fprintf(fp, "%d", 1111);
+        fprintf(fp, "%d", 00);
         fprintf(fp, ", ");
         fprintf(fp, "%.6f", targets[i].x);
         fprintf(fp, ", ");
