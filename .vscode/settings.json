@@ -2,6 +2,7 @@
     "files.associations": {
         "ratio": "c",
         "cmath": "c",
-        "numbers": "c"
+        "numbers": "c",
+        "expansion.h": "c"
     }
 }
