@@ -104,8 +104,11 @@ void move_free_until_border(struct Neighbors *neighbors, Drones drones[], Drones
         findMaxDistances(neighbors, closeBorder, &closeBorderSize); // find spot that is far from the sink ( towards the border)
         sscanf(closeBorder[0], "s%d", &dir);
         moveDrones(currentDrones, dir);
+        append_new_step(currentDrones, dir);
         direction_border_neighbor = border_drone_with_min_drones(neighbors, currentDrones, drones, numdrones, dir, &arrived_to_border); // check if the found drone is border so stop moving if not no
         moveDrones(currentDrones, direction_border_neighbor);
+        if (direction_border_neighbor != 0) // if the drone did not arrive to the border then it border_drone_with_min_drones will return zero dont save it in the movement list
+            append_new_step(currentDrones, direction_border_neighbor);
         setDist(neighbors, currentDrones->x, currentDrones->y); // update for the next iteration
     }
 }
