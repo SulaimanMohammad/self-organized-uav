@@ -413,7 +413,7 @@ void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors
     }
     if (count_drons == 6)
     {
-        currentDrones->state = 0; // free state
+        currentDrones->state = 1; // free state
     }
     else
     { // check if the drone is border=2
