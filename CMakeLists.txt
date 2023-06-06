@@ -11,6 +11,7 @@ link_libraries(m)
 # Create static library target for expansion
 add_library(expansion STATIC src/expansion.c include/expansion.h)
 add_library(spanning STATIC src/spanning.c include/spanning.h)
+add_library(balancing STATIC src/balancing.c include/balancing.h)
 
 # Add include directories
 include_directories(include)
@@ -19,4 +20,4 @@ include_directories(include)
 add_executable(main main.c)
 
 # Link main target with expansion library
-target_link_libraries(main expansion spanning)
+target_link_libraries(main expansion spanning balancing)
