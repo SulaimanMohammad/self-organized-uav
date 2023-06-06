@@ -20,8 +20,8 @@ for line in lines:
     stage_points = []
     for i in range(len(coords)//4):
         id = int(coords[i*4])
-        x = float(coords[i*4+1]) #+ np.random.normal(0, 0.2) # add some noise to x coordinate
-        y = float(coords[i*4+2]) #+ np.random.normal(0, 0.2) # add some noise to y coordinate
+        x = float(coords[i*4+1]) + np.random.normal(0, 0.2) # add some noise to x coordinate
+        y = float(coords[i*4+2]) + np.random.normal(0, 0.2) # add some noise to y coordinate
         state= int(coords[i*4+3])
         stage_points.append((id,x, y, state))
     points_list.append(stage_points)
@@ -41,7 +41,7 @@ colors =  ['g', 'b', 'c', 'm', 'y', 'aqua', 'aquamarine', 'azure', 'bisque', 'bl
                    'mediumturquoise', 'mediumvioletred', 'midnightblue', 'navajowhite', 'navy', 'olive',
                    'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise',
                    'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple',
-                   'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown',
+                   'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'sandybrown',
                    'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'springgreen',
                    'steelblue', 'tan', 'teal', 'thistle', 'turquoise', 'violet', 'wheat', 'yellow',
                    'yellowgreen'] * len(stage_points)# List of colors for each stage
