@@ -48,7 +48,13 @@ int dir_minimum_drones_in_border_neigboor(struct Neighbors *neighbors)
     char *spot;
     int count;
     spot = neighbors->keys[0];
-    count = neighbors->w[0];
+    /*the resason of puting -1 because where the drone will arive to border then it will count itself also so that means 2 in the sopt
+    so the the check should be based on the number of drones on the niegbor out of counting the drone do that
+    the reason it is important , for the path of the expasnsion
+    suppose a drone arrived to a spot of border then withut using -1 then it will use to other border is occupied by the drone of the border because the count will =1 while where the drone is=2
+    and that will not help because it would effect on the path of expansion if it was not necesssary
+    */
+    count = neighbors->w[0] - 1;
     // the number of drone in each neigboor stored in variable "w"
     for (int i = 0; i < neighbors->size; i++)
     {                                                       // need to check the spot, and the drone there if it is border because the neigboor can contain non-border drone
@@ -98,7 +104,8 @@ void move_free_until_border(struct Neighbors *neighbors, Drones drones[], Drones
         char closeBorder[MAX_SIZE][MAX_SIZE];
         int closeBorderSize;
         int direction_border_neighbor;
-        check_drone_spot(drones, currentDrones, numdrones);     // check if the drone is alone or nots
+        // check if the drone is alone or nots ( no need to check for being alone because that start with free after spanning and expansion )
+        // and also the drone will go to somewhere where it will stay on the border so it wll not be alone
         setDist(neighbors, currentDrones->x, currentDrones->y); // update for the next iteration
         // no need to check the num_drones_at_neighbors or to find priority because we need to go the border not to couver
         findMaxDistances(neighbors, closeBorder, &closeBorderSize); // find spot that is far from the sink ( towards the border)
@@ -107,8 +114,29 @@ void move_free_until_border(struct Neighbors *neighbors, Drones drones[], Drones
         append_new_step(currentDrones, dir);
         direction_border_neighbor = border_drone_with_min_drones(neighbors, currentDrones, drones, numdrones, dir, &arrived_to_border); // check if the found drone is border so stop moving if not no
         moveDrones(currentDrones, direction_border_neighbor);
-        if (direction_border_neighbor != 0) // if the drone did not arrive to the border then it border_drone_with_min_drones will return zero dont save it in the movement list
-            append_new_step(currentDrones, direction_border_neighbor);
+        // no need to save the path that give the balne becase it is no related to the expansion dir, it is movement o plance so it should not be saved
+        // if we hae drone take path of s5 then paht of s2 and s2 ahaon to achive the balance then we can not consider that s2 is in the path of expanion
+        // if (direction_border_neighbor != 0) // if the drone did not arrive to the border then it border_drone_with_min_drones will return zero dont save it in the movement list
+        //     append_new_step(currentDrones, direction_border_neighbor);
         setDist(neighbors, currentDrones->x, currentDrones->y); // update for the next iteration
     }
+}
+
+void perform_balancing_phase(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
+{
+    for (int i = 0; i < numdrones; i++)
+    {
+        if (drones[i].state == 1) // drone is free
+        {
+            // in this function the steps ist will be again created so in this way we can see how the drone will move
+            // so in this way we reord how the drone moved to the border
+            move_free_until_border(&DroneNeighbors[i], drones, &drones[i], numdrones);
+        }
+        // printf("drone %d state %d with path as: \n", i, drones[i].state);
+
+        // for (int j = 0; j < drones[i].num_neighbors; j++)
+        //     printf(" %d,", drones[i].border_neighbors[j]);
+        // printf("\n");
+    }
+    // saveDrones(drones, numdrones, fp);
 }

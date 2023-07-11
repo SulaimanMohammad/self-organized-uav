@@ -7,4 +7,5 @@ void set_num_drones_border_at_neighbors(Drones drones[], struct Neighbors *neigh
 int dir_minimum_drones_in_border_neigboor(struct Neighbors *neighbors);
 int border_drone_with_min_drones(struct Neighbors *neighbors, Drones *currentDrones, Drones drones[], int numdrones, int dir, int *arrived_to_border);
 void move_free_until_border(struct Neighbors *neighbors, Drones drones[], Drones *currentDrones, int numdrones);
+void perform_balancing_phase(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp);
 #endif
