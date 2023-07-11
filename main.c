@@ -8,11 +8,11 @@ int main(int argc, char *argv[])
 {
     FILE *fp;
     fp = fopen("output.txt", "w");
-    // srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
+    srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
 
     if (argc < 2)
     {
-        printf("Please provide a number as argument\n");
+        printf("Please provide a number of drone as argument ex.\"n=60\" \n");
         return 1;
     }
     else
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    int targets_size = numdrones * 0.25;
+    int targets_size = numdrones * 0.20;
     Target targets[targets_size];
     // generates coordiantes of targets
     generate_random_targets(targets, targets_size);
@@ -44,15 +44,32 @@ int main(int argc, char *argv[])
     Drones drones[numdrones];
     initializeDrones(drones, numdrones);
 
+    /*
+    When you declare an array of Drones as Drones drones[numdrones], it creates an array of numdrones elements on the stack.
+    These pointers (direction_taken and border_neighbors) are uninitialized .
+    Therefore, you will expereience undefined behaviorif passing uninitialized pointers to the append_drones_neighbors_names function, .
+    */
+    for (int i = 0; i < numdrones; i++)
+    {
+        drones[i].direction_taken = NULL;  // Initialize direction_taken pointer
+        drones[i].border_neighbors = NULL; // Initialize border_neighbors pointer
+        drones[i].num_neighbors = 0;       // Initialize num_neighbors
+        drones[i].num_steps = 0;           // Initialize num_neighbors
+        drones[i].direction_dominated = 0;
+        for (int j = 0; j < 3; j++)
+        {
+            drones[i].border_irrrmovable[j] = 0;
+            drones[i].to_check[j] = 0;
+        }
+    }
     // spread from the sink;
     for (int i = 0; i < numdrones; i++)
     {
         int dir = randomInt(1, 6); // remeber dir are from 0-6 but here number is between 1-6 so no drone start at the sink because that will lead to worng pripority
         moveDrones(&drones[i], dir);
         append_new_step(&drones[i], dir);
-        // printf("drone %d , went to s%d\n", i, dir);
     }
-    saveDrones(drones, numdrones, fp);
+    // saveDrones(drones, numdrones, fp);
 
     // init the 6 neighboors distances
     for (int i = 0; i < numdrones; i++)
@@ -60,70 +77,59 @@ int main(int argc, char *argv[])
         creatSpots(&DroneNeighbors[i], drones[i].x, drones[i].y); // drones[i].x, drones[i].y are the coordinates drom (0,0) the sink
     }
 
-    char Priority[MAX_SIZE][MAX_SIZE];
-    int PrioritySize;
-    int dir;
-    int num_drone_alone = 0;
-    int steps = 0;
-    // state=1 not alone
-    // state = 0 it is alone and free
-    while (num_drone_alone < numdrones)
+    perform_first_expansion(drones, DroneNeighbors, numdrones, fp);
+    form_border_and_update_states(drones, DroneNeighbors, numdrones, targets, targets_size, fp);
+    // END of expansion phase
+    perform_spanning(drones, DroneNeighbors, numdrones, fp);
+    // End of spanning phase
+    perform_balancing_phase(drones, DroneNeighbors, numdrones, fp);
+
+    for (int i = 0; i < numdrones; i++)
     {
-        // each point now need to check around then move then the second oen do that
-        // the ones before should be moved so the next one can detect the new position
-        num_drone_alone = 0;
+        drones[i].previous_state = drones[i].state;
+    }
+
+    // }
+    int num_drones_border_irrmovable = 0;
+    for (int i = 0; i < numdrones; i++)
+    {
+        if (drones[i].state == 2 || drones[i].state == 3 || drones[i].state == 4)
+            num_drones_border_irrmovable++;
+    }
+    int round = 0;
+    while (num_drones_border_irrmovable < numdrones)
+    {
+        printf("-------------Further %d------------\n,", round++);
+
+        num_drones_border_irrmovable = 0;
+        perform_further_expansion(drones, DroneNeighbors, numdrones, fp);
+        // another finiding border
+        form_further_border_and_update_states(drones, DroneNeighbors, numdrones, targets, targets_size, fp);
+        // // another balancing
+        perform_further_spanning(drones, DroneNeighbors, numdrones, fp);
+        perform_balancing_phase(drones, DroneNeighbors, numdrones, fp);
+
         for (int i = 0; i < numdrones; i++)
         {
-            check_drone_spot(drones, &drones[i], numdrones); // check if the drone is alone or nots
-            if (drones[i].state != 0)                        // drone is not alone    // to move and there are many drone in the same place
-            {
-                setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
-
-                set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
-                setPriorities(&DroneNeighbors[i]);
-
-                findPriority(&DroneNeighbors[i], Priority, &PrioritySize); // that should return only one number, since there is also random number generator
-                                                                           // if the random numbering is not considered then there will be many possible solution
-                                                                           // and that if the spots has the same number of dron in it and using the [f(w,c,eps), f(w,c)[
-                                                                           // then same number will be choosed for pts has same drons
-
-                sscanf(Priority[0], "s%d", &dir);
-                moveDrones(&drones[i], dir);
-                append_new_step(&drones[i], dir);
-                setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
-            }
-            else // if the drone is alone do not move
-            {
-                num_drone_alone++;
-            }
+            if (drones[i].state == 2 || drones[i].state == 3 || drones[i].state == 4)
+                num_drones_border_irrmovable++;
         }
-        saveDrones(drones, numdrones, fp);
-    }
-    //  After the Drones spread,  now it is time to see if each drone is free or border
-    for (int i = 0; i < numdrones; i++)
-    {
-        find_border_update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
-        set_state_target_check(&drones[i], targets, targets_size);
-        free(drones[i].direction_taken); // no need for it any more
-    }
-    saveDrones(drones, numdrones, fp);
-    // END of expansion phase
-    for (int i = 0; i < numdrones; i++)
-    {
-        build_path_to_sink(&DroneNeighbors[i], &drones[i], drones, numdrones);
-        build_path_to_border(&DroneNeighbors[i], &drones[i], drones, numdrones);
-    }
-    saveDrones(drones, numdrones, fp);
-    // End of spanning phase
-
-    for (int i = 0; i < numdrones; i++)
-    {
-        if (drones[i].state == 1) // drone is free
+        for (int i = 0; i < numdrones; i++)
         {
-            move_free_until_border(&DroneNeighbors[i], drones, &drones[i], numdrones);
+            if (drones[i].previous_state != 3)
+                drones[i].previous_state = drones[i].state;
         }
     }
-    saveDrones(drones, numdrones, fp);
+    // saveDrones(drones, numdrones, fp);
+
+    // free border_neighbors
+    for (int i = 0; i < numdrones; i++)
+    {
+        if (drones[i].num_neighbors != 0)
+            reset_drones_neighbors_names(&drones[i]);
+        if (drones[i].num_steps != 0)
+            reset_steps(&drones[i]);
+    }
 
     fclose(fp);
     return 0;
