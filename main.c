@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
     FILE *fp;
     fp = fopen("output.txt", "w");
-    srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
+    // srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
 
     if (argc < 2)
     {
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         moveDrones(&drones[i], dir);
         append_new_step(&drones[i], dir);
     }
-    // saveDrones(drones, numdrones, fp);
+    saveDrones(drones, numdrones, fp);
 
     // init the 6 neighboors distances
     for (int i = 0; i < numdrones; i++)
@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
         drones[i].previous_state = drones[i].state;
     }
 
-    // }
     int num_drones_border_irrmovable = 0;
     for (int i = 0; i < numdrones; i++)
     {
@@ -99,8 +98,6 @@ int main(int argc, char *argv[])
     int round = 0;
     while (num_drones_border_irrmovable < numdrones)
     {
-        printf("-------------Further %d------------\n,", round++);
-
         num_drones_border_irrmovable = 0;
         perform_further_expansion(drones, DroneNeighbors, numdrones, fp);
         // another finiding border
@@ -120,7 +117,7 @@ int main(int argc, char *argv[])
                 drones[i].previous_state = drones[i].state;
         }
     }
-    // saveDrones(drones, numdrones, fp);
+    saveDrones(drones, numdrones, fp);
 
     // free border_neighbors
     for (int i = 0; i < numdrones; i++)
@@ -130,6 +127,10 @@ int main(int argc, char *argv[])
         if (drones[i].num_steps != 0)
             reset_steps(&drones[i]);
     }
+    printf("--------------------------------------------------------------------\n");
+    printf(" ----------Drones positions are calculated in all phaes----------\n");
+    printf("--------------------------------------------------------------------\n");
+    printf("        ---------- PLoting Data in process ----------               \n");
 
     fclose(fp);
     return 0;
