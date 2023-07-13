@@ -132,11 +132,6 @@ void perform_balancing_phase(Drones drones[], struct Neighbors DroneNeighbors[],
             // so in this way we reord how the drone moved to the border
             move_free_until_border(&DroneNeighbors[i], drones, &drones[i], numdrones);
         }
-        // printf("drone %d state %d with path as: \n", i, drones[i].state);
-
-        // for (int j = 0; j < drones[i].num_neighbors; j++)
-        //     printf(" %d,", drones[i].border_neighbors[j]);
-        // printf("\n");
     }
-    // saveDrones(drones, numdrones, fp);
+    saveDrones(drones, numdrones, fp);
 }
