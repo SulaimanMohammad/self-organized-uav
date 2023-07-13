@@ -31,7 +31,15 @@ typedef struct Drones
     int state;
     // alone=0 free=1 border=2 irrmovable=3 // irrovable and border= 4
     int num_steps;
-    int *direction_taken; // array contains the direction was taken
+    int num_neighbors;
+    int *direction_taken;  // array contains the direction was taken
+    int *border_neighbors; // array that will containst the id of the drones that are niegbor a drone border
+    int previous_state;
+    // when the border s formed
+    // if a drone become irrmovable then the dominated direction  will not change
+    int border_irrrmovable[3];
+    int to_check[3];
+    int direction_dominated;
 
 } Drones;
 
@@ -82,21 +90,34 @@ float randomFloat(float A, float B);
 int randomInt(int A, int B);
 
 void setPriorities(struct Neighbors *neighbors);
-
+void findBorderDroneAround(Drones drones[], Drones *currentDrone, char result[MAX_SIZE][MAX_SIZE], int *resultSize, int numdrones);
+void allowed_neigbors_for_further_expan(Drones drones[], Drones *currentDrone, char allowed_neighbors[MAX_SIZE][MAX_SIZE], int *allowed_neighborsSize, int numdrones);
+void setPriorities_further_expan(Drones drones[], Drones *currentDrone, struct Neighbors *neighbors, char allowed_neighbors[MAX_SIZE][MAX_SIZE], int allowed_neighborsSize, int numdrones);
 void initializeDrones(Drones drones[], int numdrones);
 
 void printDrones(Drones drones[], int numdrones);
 void saveDrones(Drones drones[], int numdrones, FILE *fp);
 
 int countdronesAtPosition(Drones drones[], int numdrones, float x, float y);
-
+int countdronesAtPosition_with_specific_state(Drones drones[], int numdrones, float x, float y, int states);
 void moveDrones(Drones *Drones, enum Direction dir);
 
 void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
 void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones);
+void check_drone_spot_further_expan(Drones drones[], Drones *currentDrones, int numdrones);
+
 void append_new_step(Drones *currentDrones, int dir);
+void reset_steps(Drones *currentDrones);
+void append_drones_neighbors_names(Drones *currentDrones, int neighbor);
+void reset_drones_neighbors_names(Drones *currentDrones);
+
 void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones);
+void update_irrmovable_border_state(Drones drones[], Drones *currentDrones, int numdrones);
+void conditions_to_find_border(Drones drones[], Drones *currentDrones, int numdrones, int to_check[], int dominate_dir);
 int countElementOccurrences(const Drones *currentDrones);
 int target_in_area(Drones *currentDrones, Target *targets, int targets_num, int distance, int length);
-
+void perform_first_expansion(Drones *drones, struct Neighbors DroneNeighbors[], int numdrones, FILE *fp);
+void perform_further_expansion(Drones *drones, struct Neighbors *DroneNeighbors, int numdrones, FILE *fp);
+void form_border_and_update_states(Drones *drones, struct Neighbors DroneNeighbors[], int numdrones, Target targets[], int targets_size, FILE *fp);
+void form_further_border_and_update_states(Drones *drones, struct Neighbors DroneNeighbors[], int numdrones, Target targets[], int targets_size, FILE *fp);
 #endif
