@@ -109,7 +109,7 @@ The vector of the movement is created based on this calculations
 - Suppose the initialization stage , all the drones will be at the sink and spots s1-s6 are free and the priorities should be calculated by the formula:
 
     $$
-    v_i= \frac{d(s_i,S)*C} {4*d(d_i,S)}
+    v_i = \frac{d(s_i, S) \cdot C}{4 \cdot d(d_i, S)}
     $$
 
     - if the drone starts at the sink then  d(si,s)=0 which is the denominator of vi for s1-s6 around the sink. So v_i will be **inf** for unoccupied at the initialization and the only one will have value is the sink because it is occupied spot
@@ -140,9 +140,9 @@ for (int i = 0; i < numdrones; i++)
         - Find the spots that is closest to the sink
         - if the spot is not close to the sink and has no drones in it then use this
 
-        $$
-        v_i= \frac{d(s_i,S)*C} {4*d(d_i,S)}
-        $$
+            $$
+            v_i = \frac{d(s_i, S) \cdot C}{4 \cdot d(d_i, S)}
+            $$
 
         - If the spot is occupied and far from the sink then use random priority [w*C+eps, w+1*C]
         - If the drone is close to the sink then give it a Inf ( here it is set as -1)  value so the drones will not go back to the sink
