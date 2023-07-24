@@ -138,7 +138,7 @@ for (int i = 0; i < numdrones; i++)
     - count the numbers of drones in each of the neighbors
     - set the priority of each neighboring spots and save it in the spot priority
         - Find the spots that is closest to the sink
-        - if the spot is not close to the sink and has no drones in it then use this
+        - if the spot is not close to the sink and has no drones in it then use the formula
 
             $$
             v_i = \frac{d(s_i, S) \cdot C}{4 \cdot d(d_i, S)}
