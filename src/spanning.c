@@ -85,7 +85,7 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targ
 void findIrremovableDroneAround(Drones drones[], Drones *currentDrone, char result[MAX_SIZE][MAX_SIZE], int *irrmvble_id, int *resultSize, int numdrones)
 {
     int count = 0;
-    for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to w in neigboor of the Drones
+    for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to spot_num_drones in neigboor of the Drones
     {
         for (int i = 0; i < numdrones; i++)
         {
@@ -105,7 +105,7 @@ void findIrremovableDroneAround(Drones drones[], Drones *currentDrone, char resu
 void find_num_IrremovableDroneAround(Drones drones[], Drones *currentDrone, int *resultSize, int numdrones, int currentDrones_id, int sender_id)
 {
     int count = 0;
-    for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to w in neigboor of the Drones
+    for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to spot_num_drones in neigboor of the Drones
     {
         for (int i = 0; i < numdrones; i++)
         {
@@ -210,7 +210,7 @@ void findDirofSender(Drones drones[], Drones *currentDrone, char sender_dir[3], 
 {
 
     int count = 0;
-    for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to w in neigboor of the Drones
+    for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to spot_num_drones in neigboor of the Drones
     {
         for (int i = 0; i < numdrones; i++)
         {
@@ -386,6 +386,8 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
     char sender_dir[3];
     findDirofSender(drones, currentDrones, sender_dir, numdrones, sender_id);
     float min_irrmovable;
+
+    // check if there is any irremovable drone in the neighbors and close to the sink ( then stop the search)
     if (irrmvbleSize > 0)
     {
         for (int k = 0; k < irrmvbleSize; k++)

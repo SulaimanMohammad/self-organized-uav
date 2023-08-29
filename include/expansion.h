@@ -47,10 +47,10 @@ struct Neighbors
 {
     char keys[MAX_SIZE][MAX_SIZE];
     float distances[MAX_SIZE];
-    float v[MAX_SIZE];
+    float spot_priority[MAX_SIZE];
     char Status[MAX_SIZE][MAX_SIZE]; // occupied or free
     int size;
-    int w[MAX_SIZE]; // you needed to be incremented when a new arriver
+    int spot_num_drones[MAX_SIZE]; // you needed to be incremented when a new arriver
 };
 
 typedef struct Target

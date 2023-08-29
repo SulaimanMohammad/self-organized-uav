@@ -33,6 +33,9 @@ int main(int argc, char *argv[])
     generate_random_targets(targets, targets_size);
     save_targes(targets, targets_size, fp);
 
+    Drones drones[numdrones];
+    initializeDrones(drones, numdrones);
+
     // for the neigboor
     // create a Neighbors for the neighboor ( one for each drone, so each drone has data of the s1-s6)
     struct Neighbors DroneNeighbors[numdrones];
@@ -40,9 +43,6 @@ int main(int argc, char *argv[])
     {
         initNeighbors(&DroneNeighbors[i]);
     }
-
-    Drones drones[numdrones];
-    initializeDrones(drones, numdrones);
 
     /*
     When you declare an array of Drones as Drones drones[numdrones], it creates an array of numdrones elements on the stack.

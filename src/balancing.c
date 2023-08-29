@@ -27,13 +27,13 @@ int count_border_drones_AtPosition(Drones drones[], int numdrones, float x, floa
 void set_num_drones_border_at_neighbors(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones)
 {
     int count_drons = 0;
-    for (int j = 0; j < 7; j++) // need to check the number in each neigboor and add to w in neigboor of the Drones
+    for (int j = 0; j < 7; j++) // need to check the number in each neigboor and add to spot_num_drones in neigboor of the Drones
     {
 
         count_drons = count_border_drones_AtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
         if (count_drons > 0)
         {
-            setStatus(neighbors, neighbors->keys[j], "o", count_drons); // neighborsionaries[i].w[j]
+            setStatus(neighbors, neighbors->keys[j], "o", count_drons); // neighborsionaries[i].spot_num_drones[j]
         }
         else
         {
@@ -54,13 +54,13 @@ int dir_minimum_drones_in_border_neigboor(struct Neighbors *neighbors)
     suppose a drone arrived to a spot of border then withut using -1 then it will use to other border is occupied by the drone of the border because the count will =1 while where the drone is=2
     and that will not help because it would effect on the path of expansion if it was not necesssary
     */
-    count = neighbors->w[0] - 1;
-    // the number of drone in each neigboor stored in variable "w"
+    count = neighbors->spot_num_drones[0] - 1;
+    // the number of drone in each neigboor stored in variable "spot_num_drones"
     for (int i = 0; i < neighbors->size; i++)
-    {                                                       // need to check the spot, and the drone there if it is border because the neigboor can contain non-border drone
-        if (neighbors->w[i] > 0 && neighbors->w[i] < count) // neighbors->w >0 means it is border ( see count_border_drones_AtPosition )
+    {                                                                                   // need to check the spot, and the drone there if it is border because the neigboor can contain non-border drone
+        if (neighbors->spot_num_drones[i] > 0 && neighbors->spot_num_drones[i] < count) // neighbors->spot_num_drones >0 means it is border ( see count_border_drones_AtPosition )
         {
-            count = neighbors->w[i];
+            count = neighbors->spot_num_drones[i];
             spot = neighbors->keys[i]; // save the name of the spot that has minimum number
         }
     }

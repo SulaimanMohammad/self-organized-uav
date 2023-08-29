@@ -1,5 +1,4 @@
 #include "expansion.h"
-#include "spanning.h" // needed for set_state_target_check in the expansion
 #include <stdbool.h>
 
 // Define the unit vectors for each direction
@@ -272,6 +271,7 @@ void setPriorities(struct Neighbors *neighbors)
                 neighbors->spot_priority[i] = randomFloat((neighbors->spot_num_drones[i] * C + eps), (neighbors->spot_num_drones[i] + 1) * C); // spot is away  from the sink
             }
         }
+        // printf("spot %s, dis=%f , stat %s , num %d , prior %f \n", neighbors->keys[i], neighbors->distances[i], neighbors->Status[i], neighbors->spot_num_drones[i], neighbors->v[i]);
     }
 }
 
@@ -307,15 +307,17 @@ void allowed_neigbors_for_further_expan(Drones drones[], Drones *currentDrone, c
             //*numMissing = 0;
             for (int j = 0; j < fullSize; j++)
             {
-                if (!found[j]) // if sopt is not in border_neighbors ( means spot was not occupied)
+                if (!found[j])
                 {
                     char neighbors[3];
                     sprintf(neighbors, "s%d", j + 1);
-                    strcpy(allowed_neighbors[count], neighbors); // save the spot that were not occupied in last expansion
+                    // printf("    allowed from botrder %s\n", neighbors);
+                    strcpy(allowed_neighbors[count], neighbors);
                     count++;
                 }
             }
             *allowed_neighborsSize = count;
+            // return;
         }
     }
     if (*allowed_neighborsSize > 0) // that means that the drone was in the spot of the border and that will happen only one time after the spanning
@@ -325,6 +327,7 @@ void allowed_neigbors_for_further_expan(Drones drones[], Drones *currentDrone, c
         *allowed_neighborsSize = 3;
         int count_drons = -1;
         int dom_direction = countElementOccurrences(currentDrone);
+        // printf(" dom dir %d\n", dom_direction);
         switch (dom_direction)
         {
         case 1: // most direction to s1 , then checl s1,s6, s2 allowed
@@ -361,9 +364,14 @@ void allowed_neigbors_for_further_expan(Drones drones[], Drones *currentDrone, c
             strcpy(allowed_neighbors[0], "s2");
             strcpy(allowed_neighbors[1], "s5");
             strcpy(allowed_neighbors[2], "s1");
+            printf("cant go anywhere\n");
             break;
         }
     }
+    // for (int i = 0; i < *allowed_neighborsSize; i++)
+    // {
+    //     printf(" allowed %s\n", allowed_neighbors[i]);
+    // }
 }
 
 // the difference between this and the setPriorities , here the riority will be like inf(-1) for the neigboor that opposit of the expansion area
@@ -461,6 +469,7 @@ void setPriorities_further_expan(Drones drones[], Drones *currentDrone, struct N
         {
             neighbors->spot_priority[i] = -1;
         }
+        // printf("spot %s, dis=%f , stat %s , num %d , prior %f \n", neighbors->keys[i], neighbors->distances[i], neighbors->Status[i], neighbors->spot_num_drones[i], neighbors->v[i]);
     }
 }
 
@@ -475,7 +484,6 @@ void initializeDrones(Drones drones[], int numdrones)
         drones[i].state = 1; // free
         drones[i].num_steps = 0;
         drones[i].direction_taken = (int *)malloc(0 * sizeof(int)); // allocate memoy
-        drones[i].previous_state = 0;
     }
 }
 
@@ -519,19 +527,6 @@ int countdronesAtPosition(Drones drones[], int numdrones, float x, float y)
     return count;
 }
 
-int countdronesAtPosition_with_specific_state(Drones drones[], int numdrones, float x, float y, int states)
-{
-    int count = 0;
-    for (int i = 0; i < numdrones; i++)
-    {
-        if (drones[i].x == x && drones[i].y == y && (drones[i].state == 2 || drones[i].state == 4))
-        {
-            count++;
-        }
-    }
-    return count;
-}
-
 void moveDrones(Drones *Drones, enum Direction dir)
 {
     // Move the given Drones a fixed distance in one of the 6 directions
@@ -546,6 +541,7 @@ void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, D
     {
 
         count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
+        // printf("neighbors S%d has %d  drons at x %f, y %f\n", j, count_drons, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
         if (count_drons > 0)
         {
             setStatus(neighbors, neighbors->keys[j], "o", count_drons); // neighborsionaries[i].spot_num_drones[j]
@@ -560,10 +556,10 @@ void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, D
 
 void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones)
 {
-    int previous_state = currentDrones->state;
     int count_drons = 0;
 
     count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
+    // printf("current drone S%d has %d  drons at x %f, y %f\n\n", 0, count_drons, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
     if (count_drons > 1)
     {
         currentDrones->state = 1; // it is not alone
@@ -572,20 +568,15 @@ void check_drone_spot(Drones drones[], Drones *currentDrones, int numdrones)
     {
         currentDrones->state = 0; // it is alone
     }
-
-    // if (currentDrones->state != previous_state)
-    //     currentDrones->previous_state = previous_state;
 }
 
 void check_drone_spot_further_expan(Drones drones[], Drones *currentDrones, int numdrones)
 {
     int count_drons = 0;
-    int previous_state = currentDrones->state;
-
     if (currentDrones->state == 1) // if the drone is free ( not border or irrmovable)
     {
-        // check if the current spot contains more than one drone or not ( find if it is alon or no)
         count_drons = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
+        // printf("current drone S%d has %d  drons at x %f, y %f\n\n", 0, count_drons, currentDrones->x + DIR_VECTORS[0][0], currentDrones->y + DIR_VECTORS[0][1]);
         if (count_drons > 1)
         {
             currentDrones->state = 1; // it is not alone but free
@@ -595,9 +586,6 @@ void check_drone_spot_further_expan(Drones drones[], Drones *currentDrones, int 
             currentDrones->state = 0; // it is alone
         }
     }
-
-    // if (currentDrones->state != previous_state)
-    //     currentDrones->previous_state = previous_state;
 }
 
 void append_new_step(Drones *currentDrones, int dir)
@@ -671,12 +659,10 @@ void reset_drones_neighbors_names(Drones *currentDrones)
 
 void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones)
 {
-    int previous_state = currentDrones->state;
     int num_found_drones = 0;
     int count_drons = 0; // from 0 to 6 because s0 not needed since the dron is alone and we want to see around
     int edit_state = 0;
     int cond_done = 0;
-
     for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to spot_num_drones in neigboor of the Drones
     {
         num_found_drones = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
@@ -686,7 +672,6 @@ void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors
     }
     // the drone at the sink is always irrmovable
     // that i important for the connectivity
-    // the center always irrmovable
     if (currentDrones->x == 0.0 && currentDrones->y == 0.0) // TODO that should be doen only if no target found
     {
         currentDrones->state = 3;
@@ -708,129 +693,65 @@ void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors
     else
     { // if the drone is not already a border // because in the futher expansion the deone was in border will not have full niegbor around but they should get free
       // int the further phase it should should keep anything whatever
-
-        // check if the drone is border=2
-        // check if there are less than 3 spot occupied in the direction of the expansion
-        int count_drons = -1;
-        int direction = countElementOccurrences(currentDrones); // check th direction of the expansion of the drone
-        // printf("Drone %d direction=%d\n", currentDrones->id, direction);
-        currentDrones->direction_dominated = direction;
-        switch (direction)
+        if (1)
         {
-        case 1: // most direction to s1 , then check s1,s6, s2 to see the border
-            int to_check1[] = {1, 2, 6};
-            memcpy(currentDrones->to_check, to_check1, sizeof(3)); // save the dominated direction in the clas memeber
-            conditions_to_find_border(drones, currentDrones, numdrones, to_check1, direction);
-            break;
-        case 2:
-            int to_check2[] = {1, 2, 3};
-            memcpy(currentDrones->to_check, to_check2, sizeof(3));
-            conditions_to_find_border(drones, currentDrones, numdrones, to_check2, direction);
-            break;
-        case 3:
-            int to_check3[] = {3, 2, 4};
-            memcpy(currentDrones->to_check, to_check3, sizeof(3));
-            conditions_to_find_border(drones, currentDrones, numdrones, to_check3, direction);
-            break;
-        case 4:
-            int to_check4[] = {3, 4, 5};
-            memcpy(currentDrones->to_check, to_check4, sizeof(3));
-            conditions_to_find_border(drones, currentDrones, numdrones, to_check4, direction);
-            break;
-        case 5:
-            int to_check5[] = {4, 5, 6};
-            memcpy(currentDrones->to_check, to_check5, sizeof(3));
-            conditions_to_find_border(drones, currentDrones, numdrones, to_check5, direction);
-            break;
-        case 6:
-            int to_check6[] = {1, 5, 6};
-            memcpy(currentDrones->to_check, to_check6, sizeof(3));
-            conditions_to_find_border(drones, currentDrones, numdrones, to_check6, direction);
-            break;
+            // check if the drone is border=2
+            // check if there are less than 3 spot occupied in the direction of the expansion
+            int count_drons = -1;
+            int direction = countElementOccurrences(currentDrones); // check th direction of the expansion of the drone
+
+            switch (direction)
+            {
+            case 1: // most direction to s1 , then check s1,s6, s2 to see the border
+                int to_check1[] = {1, 2, 6};
+                conditions_to_find_border(drones, currentDrones, numdrones, to_check1);
+
+                break;
+            case 2:
+                int to_check2[] = {1, 2, 3};
+                conditions_to_find_border(drones, currentDrones, numdrones, to_check2);
+                break;
+            case 3:
+                int to_check3[] = {3, 2, 4};
+                conditions_to_find_border(drones, currentDrones, numdrones, to_check3);
+                break;
+            case 4:
+                int to_check4[] = {3, 4, 5};
+                conditions_to_find_border(drones, currentDrones, numdrones, to_check4);
+                break;
+            case 5:
+                int to_check5[] = {4, 5, 6};
+                conditions_to_find_border(drones, currentDrones, numdrones, to_check5);
+                break;
+            case 6:
+                int to_check6[] = {1, 5, 6};
+                conditions_to_find_border(drones, currentDrones, numdrones, to_check6);
+                break;
+            }
         }
     }
 }
 
-void update_irrmovable_border_state(Drones drones[], Drones *currentDrones, int numdrones) // dont check will be =3
+void conditions_to_find_border(Drones drones[], Drones *currentDrones, int numdrones, int to_check[])
 {
-    int num_found_drones = 0;
-    for (int i = 0; i < 3; i++)
-    {
-        if (currentDrones->border_irrrmovable[i] == 0) // means that the spot was not occupied before
-        {
-            // check if it is fullfiled
-            num_found_drones = countdronesAtPosition(drones, numdrones,
-                                                     currentDrones->x + DIR_VECTORS[currentDrones->to_check[i]][0],
-                                                     currentDrones->y + DIR_VECTORS[currentDrones->to_check[i]][1]);
-            if (num_found_drones > 0)
-                currentDrones->border_irrrmovable[i] = 1;
-        }
-    }
-}
-
-void conditions_to_find_border(Drones drones[], Drones *currentDrones, int numdrones, int to_check[], int dominate_dir)
-{
-    int previous_state = currentDrones->state;
     int num_found_drones = 0;
     int count_drons = 0;
     int s;
-
-    /* no need to check for 3 because alrady not entered
-    notie here we check for the ones as 4 and check for it is around to know if it is still border or no */
-    // if the drone is not any more in the border but it was border-rrmovable then chabge it to be only irrmovable
-
-    if (currentDrones->state == 4)
+    for (int i = 0; i < 3; i++)
     {
-        /* suppose  to_check6[] = {1, 5, 6};
-                    border_irrrmovabl= {1,1,0}
-                    check if spot s6 is fullfiled
-        */
-        int change_count = 0;
-        for (int i = 0; i < 3; i++)
-        {
-            if (currentDrones->border_irrrmovable[i] == 0) // means that the spot was not occupied before
-            {
-                // check if it is fullfiled
-                num_found_drones = countdronesAtPosition(drones, numdrones,
-                                                         currentDrones->x + DIR_VECTORS[to_check[i]][0],
-                                                         currentDrones->y + DIR_VECTORS[to_check[i]][1]);
-                if (num_found_drones > 0)
-                {
-                    currentDrones->border_irrrmovable[i] = 1;
-                    change_count++;
-                    //  because it can be all become 1 at some point then it should not goes to 3
-                }
-            }
-        }
-        int count = 0;
-        for (int i = 0; i < 3; i++) //
-        {
-            if (currentDrones->border_irrrmovable[i] == 1)
-                count++;
-        }
-
-        if (count == 3 && change_count > 0) // NOTE: this change count can lead to wrong answer
-        {
-            currentDrones->state = 3;
-        }
+        s = to_check[i];
+        num_found_drones = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[s][0], currentDrones->y + DIR_VECTORS[s][1]);
+        count_drons += num_found_drones;
     }
-    else // for the rest of drones
+    // printf("droneid=%d, count %d\n", currentDrones->id, count_drons);
+    if (count_drons < 3)
     {
-        for (int i = 0; i < 3; i++)
-        {
-            s = to_check[i];
-            num_found_drones = countdronesAtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[s][0], currentDrones->y + DIR_VECTORS[s][1]);
-            count_drons += num_found_drones;
-        }
-        if (count_drons < 3)
-        {
-            currentDrones->state = 2;
-        }
-        else
-        {
-            currentDrones->state = 1;
-            reset_drones_neighbors_names(currentDrones); // this is needed only for the border
-        }
+        currentDrones->state = 2;
+    }
+    else
+    {
+        currentDrones->state = 1;
+        reset_drones_neighbors_names(currentDrones); // this is needed only for the border
     }
 }
 
@@ -905,7 +826,7 @@ int countElementOccurrences(const Drones *currentDrones)
     }
 }
 
-void perform_first_expansion(Drones *drones, struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
+void perform_first_expansion(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
 {
     char Priority[MAX_SIZE][MAX_SIZE];
     int PrioritySize;
@@ -922,7 +843,6 @@ void perform_first_expansion(Drones *drones, struct Neighbors DroneNeighbors[], 
         num_drone_alone = 0;
         for (int i = 0; i < numdrones; i++)
         {
-            // Drones *dronez_conidered = &drones[i];
             check_drone_spot(drones, &drones[i], numdrones); // check if the drone is alone or nots
             if (drones[i].state != 0)                        // drone is not alone    // to move and there are many drone in the same place
             {
@@ -946,11 +866,12 @@ void perform_first_expansion(Drones *drones, struct Neighbors DroneNeighbors[], 
                 num_drone_alone++;
             }
         }
+        // saveDrones(drones, numdrones, fp);
     }
     saveDrones(drones, numdrones, fp);
 }
 
-void perform_further_expansion(Drones *drones, struct Neighbors *DroneNeighbors, int numdrones, FILE *fp)
+void perform_further_expansion(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
 {
     char Priority[MAX_SIZE][MAX_SIZE];
     int PrioritySize;
@@ -967,7 +888,7 @@ void perform_further_expansion(Drones *drones, struct Neighbors *DroneNeighbors,
         for (int i = 0; i < numdrones; i++)
         {
             check_drone_spot_further_expan(drones, &drones[i], numdrones);
-            //      if the droen is free or border                              // check if the drone is alone or nots
+            //      if the droen is free                               // check if the drone is alone or nots
             if (drones[i].state == 1) // drone is not alone    // to move and there are many drone in the same place
             {
                 setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
@@ -975,7 +896,9 @@ void perform_further_expansion(Drones *drones, struct Neighbors *DroneNeighbors,
                 set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
 
                 int allowed_neighborsSize = 0;
-                char allowed_to_goto[MAX_SIZE][MAX_SIZE];                                                                   // not that the size of that is always 3 because the direction is defiened only by 3 spots
+                char allowed_to_goto[MAX_SIZE][MAX_SIZE]; // not that the size of that is always 3 because the direction is defiened only by 3 spots
+                // printf(" Drone %d, state is  %d \n", drones[i].id, drones[i].state);
+                // printf(" allowed_neighborsSize %d\n ", allowed_neighborsSize);
                 allowed_neigbors_for_further_expan(drones, &drones[i], allowed_to_goto, &allowed_neighborsSize, numdrones); // the drone include also the path arr
                 // DroneNeighbors relate to drone[i]
                 setPriorities_further_expan(drones, &drones[i], &DroneNeighbors[i], allowed_to_goto, allowed_neighborsSize, numdrones);
@@ -983,27 +906,30 @@ void perform_further_expansion(Drones *drones, struct Neighbors *DroneNeighbors,
                                                                            // if the random numbering is not considered then there will be many possible solution
                                                                            // and that if the spots has the same number of dron in it and using the [f(spot_num_drones,c,eps), f(spot_num_drones,c)[
                                                                            // then same number will be choosed for pts has same drons
+                // printf(" go to %s\n ", Priority[0]);
                 sscanf(Priority[0], "s%d", &dir);
+                // printf("    dir= %d\n", dir);
                 moveDrones(&drones[i], dir);
                 append_new_step(&drones[i], dir);
                 setDist(&DroneNeighbors[i], drones[i].x, drones[i].y); // update for the next iteration
             }
-            else // if the drone is alone do not move and save that one more is alone
+            else // if the drone is alone do not move
             {
                 num_drone_alone++;
             }
         }
+
+        saveDrones(drones, numdrones, fp);
     }
-    saveDrones(drones, numdrones, fp);
 }
 
-void form_border_and_update_states(Drones *drones, struct Neighbors DroneNeighbors[], int numdrones, Target targets[], int targets_size, FILE *fp)
+void form_border_and_update_states(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, Target targets[], int targets_size, FILE *fp)
 {
     //  After the Drones spread,  now it is time to see if each drone is free or border
     for (int i = 0; i < numdrones; i++)
     {
         find_border_update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
-        set_state_target_check(drones, &drones[i], targets, targets_size, numdrones);
+        set_state_target_check(&drones[i], targets, targets_size);
         // do not free it here because it will be used agin
         // free(drones[i].direction_taken); // no need for it any more
         // after the expansion is done ther will be no need for the record of the path beuse it is done
@@ -1013,28 +939,20 @@ void form_border_and_update_states(Drones *drones, struct Neighbors DroneNeighbo
     saveDrones(drones, numdrones, fp);
 }
 
-void form_further_border_and_update_states(Drones *drones, struct Neighbors DroneNeighbors[], int numdrones, Target targets[], int targets_size, FILE *fp)
+void form_further_border_and_update_states(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, Target targets[], int targets_size, FILE *fp)
 {
     for (int i = 0; i < numdrones; i++)
-    {
-
-        // int the further phase it should should keep anything whatever
-        // only drone that has free alone state will be candidater of border
-        // if you removed the condition the drones from previous spaning will be n middel nothing around will be considered as border and that is wrong
-
-        /*here no need to put all the old drone to 3 instde we make the drone with 4 state ( bodere-irr)
-        to check if it is still border or no , and the coditions are add to find_border_update_drone_state -> conditions_to_find_border
-        and at the same time the one irrmovale will not enter because are possible in the middel
-        and should not be recognized s border 1
-        */
-
-        if (drones[i].state != 3) // you should use && not || because || if it state 3 then it will enter because or evaluate the first on if t is true it will continue
+    { // int the further phase it should should keep anything whatever
+        // printf("drone %d\n", i);
+        if (drones[i].state != 4 && drones[i].state != 3) // you should use && not || because || if it state 3 then it will enter because or evaluate the first on if t is true it will continue
         {
-
             find_border_update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
-            //  after the expansion is done ther will be no need for the record of the path because it is done
-            if (drones[i].state == 1) // only free the drone with state free
-                reset_steps(&drones[i]);
+
+            //  do not free it here because it will be used agin
+            //  free(drones[i].direction_taken); // no need for it any more
+            //  after the expansion is done ther will be no need for the record of the path beuse it is done
+            reset_steps(&drones[i]);
+            // reset_drones_neighbors_names(&drones[i]);
         }
 
         // the drone that was border and irrmovable they should be checked, because the border changed
@@ -1042,8 +960,10 @@ void form_further_border_and_update_states(Drones *drones, struct Neighbors Dron
         // this should be done before build_path_to_border or the the new border will be connected
         // and that because the building stops based on recursion that contains state border ot border irrmobavale
         // so if the old irrmovable border of the old border then the rocess will stop before arriving to the new border
+        if (drones[i].state == 4)
+            drones[i].state = 3;
 
-        set_state_target_check(drones, &drones[i], targets, targets_size, numdrones);
+        set_state_target_check(&drones[i], targets, targets_size);
     }
     saveDrones(drones, numdrones, fp);
 }
