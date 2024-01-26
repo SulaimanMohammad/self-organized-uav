@@ -1,4 +1,8 @@
 #include "expansion.h"
+#include <stdbool.h>
+
+#define PI 3.14159265358979323846
+#define SQRT_3_OVER_2 0.86602540378 // sqrt(3) / 2
 
 int isDuplicate(Target *objects, int size, float x, float y)
 {
@@ -51,9 +55,31 @@ void save_targes(Target *targets, int targets_size, FILE *fp)
         fprintf(fp, "%.6f", targets[i].y);
         fprintf(fp, ", ");
         fprintf(fp, "%d", 10);
+        fprintf(fp, ", ");
+        fprintf(fp, "%d", 0);
         fprintf(fp, "),");
     }
     fprintf(fp, "\n");
+}
+
+bool isPointInsideHexagon(float pointX, float pointY, float centerX, float centerY)
+{
+    for (int i = 0; i < 6; ++i)
+    {
+        // Calculate angle for each vertex
+        float angle = 2 * PI * i / 6;
+
+        // Rotate point around the center
+        float rotatedX = centerX + (pointX - centerX) * cos(angle) - (pointY - centerY) * sin(angle);
+        float rotatedY = centerY + (pointX - centerX) * sin(angle) + (pointY - centerY) * cos(angle);
+
+        // Check distance to the vertical line going through the hexagon center
+        if (fabs(rotatedX - centerX) > a * SQRT_3_OVER_2)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targets, int targets_size, int numdrones)
@@ -62,9 +88,10 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targ
     int previous_state = 0;
     for (int i = 0; i < targets_size; i++)
     {
-        if (currentDrones->x == targets[i].x && currentDrones->y == targets[i].y)
+        if (isPointInsideHexagon(targets[i].x, targets[i].y, currentDrones->x, currentDrones->y))
+        // if (currentDrones->x == targets[i].x && currentDrones->y == targets[i].y)
         {
-
+            currentDrones->targetfound = 1;
             previous_state = currentDrones->state;
 
             if (currentDrones->state == 0 || currentDrones->state == 1) // drone is in free or alone state
