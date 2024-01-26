@@ -29,6 +29,7 @@ typedef struct Drones
     float x;
     float y;
     int state;
+    int targetfound;
     // alone=0 free=1 border=2 irrmovable=3 // irrovable and border= 4
     int num_steps;
     int num_neighbors;

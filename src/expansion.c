@@ -5,14 +5,15 @@
 // Define the unit vectors for each direction
 // which is the 6 negihboors with respect of the drone position
 #define sqrt3 1.7
+#define sqrt3_movement 1.732
 float DIR_VECTORS[7][2] = {
-    {0, 0},                                 // s0 // dont move stay
-    {(sqrt3 * a), 0},                       // s1
-    {(sqrt3 / 2.0) * a, (3.0 / 2.0) * a},   // s2
-    {-(sqrt3 / 2.0) * a, (3.0 / 2.0) * a},  // s3
-    {-sqrt3 * a, 0},                        // s4
-    {-(sqrt3 / 2.0) * a, -(3.0 / 2.0) * a}, // s5
-    {(sqrt3 / 2.0) * a, -(3.0 / 2.0) * a}   // s6
+    {0, 0},                                          // s0 // dont move stay
+    {(sqrt3_movement * a), 0},                       // s1
+    {(sqrt3_movement / 2.0) * a, (3.0 / 2.0) * a},   // s2
+    {-(sqrt3_movement / 2.0) * a, (3.0 / 2.0) * a},  // s3
+    {-sqrt3_movement * a, 0},                        // s4
+    {-(sqrt3_movement / 2.0) * a, -(3.0 / 2.0) * a}, // s5
+    {(sqrt3_movement / 2.0) * a, -(3.0 / 2.0) * a}   // s6
 
 };
 // Initialize the Neighbors
@@ -473,6 +474,7 @@ void initializeDrones(Drones drones[], int numdrones)
         drones[i].x = 0.0;   // randomFloat(0, 1);
         drones[i].y = 0.0;   // randomFloat(0, 1);
         drones[i].state = 1; // free
+        drones[i].targetfound = 0;
         drones[i].num_steps = 0;
         drones[i].direction_taken = (int *)malloc(0 * sizeof(int)); // allocate memoy
         drones[i].previous_state = 0;
@@ -495,11 +497,13 @@ void saveDrones(Drones drones[], int numdrones, FILE *fp)
         fprintf(fp, "(");
         fprintf(fp, "%d", i);
         fprintf(fp, ", ");
-        fprintf(fp, "%.6f", drones[i].x);
+        fprintf(fp, "%.2f", drones[i].x);
         fprintf(fp, ", ");
-        fprintf(fp, "%.6f", drones[i].y);
+        fprintf(fp, "%.2f", drones[i].y);
         fprintf(fp, ", ");
         fprintf(fp, "%d", drones[i].state);
+        fprintf(fp, ", ");
+        fprintf(fp, "%d", drones[i].targetfound);
         fprintf(fp, "),");
     }
     fprintf(fp, "\n");
@@ -1006,9 +1010,9 @@ void form_border_and_update_states(Drones *drones, struct Neighbors DroneNeighbo
         set_state_target_check(drones, &drones[i], targets, targets_size, numdrones);
         // do not free it here because it will be used agin
         // free(drones[i].direction_taken); // no need for it any more
-        // after the expansion is done ther will be no need for the record of the path beuse it is done
+        // after the expansion is done ther will be no need for the recorde of the path
         if (drones[i].state == 1)
-            reset_steps(&drones[i]); // reset the path but keep it for the border because it will be used in next building of the border
+            reset_steps(&drones[i]); // reset the path but keep it for the border because it will be used in next building of the border to define dominated dir
     }
     saveDrones(drones, numdrones, fp);
 }
