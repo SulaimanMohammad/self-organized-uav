@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
     FILE *fp;
     fp = fopen("output.txt", "w");
-    // srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
+    srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
 
     if (argc < 2)
     {
@@ -27,10 +27,25 @@ int main(int argc, char *argv[])
         }
     }
 
-    int targets_size = numdrones * 0.20;
+    // int targets_size = numdrones * 0.20;
+    // Target targets[targets_size];
+    //  generates coordiantes of targets
+    //  generate_random_targets(targets, targets_size);
+
+    const int targets_size = 8; // Since you have 8 specific targets
     Target targets[targets_size];
-    // generates coordiantes of targets
-    generate_random_targets(targets, targets_size);
+
+    // Coordinates of the specific targets
+    float predefinedTargets[8][2] = {
+        {0, 85}, {0, -85}, {85, 0}, {-85, 0}, {75, 75}, {75, -75}, {-75, 75}, {-75, -75}};
+
+    // Assign these coordinates to your targets array
+    for (int i = 0; i < targets_size; i++)
+    {
+        targets[i].x = predefinedTargets[i][0];
+        targets[i].y = predefinedTargets[i][1];
+    }
+
     save_targes(targets, targets_size, fp);
 
     Drones drones[numdrones];
