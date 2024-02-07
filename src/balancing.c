@@ -74,9 +74,11 @@ int border_drone_with_min_drones(struct Neighbors *neighbors, Drones *currentDro
 {
     int direction_to_go = 0; // stay in same place
     for (int i = 0; i < numdrones; i++)
-    {                                                                                                                                          // since it is for loop will iterate in all the drone but should not consider the drone we are working on
+    { // since it is for loop will iterate in all the drone but should not consider the drone we are working on
+
         if (float_compare(drones[i].x, currentDrones->x) && float_compare(drones[i].y, currentDrones->y) && drones[i].id != currentDrones->id) // check if the drone there is already border
         {
+
             if (drones[i].state == 2 || drones[i].state == 4) // check the drone that share the same spot if it is border
             {
                 set_num_drones_border_at_neighbors(drones, neighbors, &drones[i], numdrones);
@@ -111,27 +113,91 @@ void move_free_until_border(struct Neighbors *neighbors, Drones drones[], Drones
         findMaxDistances(neighbors, closeBorder, &closeBorderSize); // find spot that is far from the sink ( towards the border)
         sscanf(closeBorder[0], "s%d", &dir);
         moveDrones(currentDrones, dir);
-        append_new_step(currentDrones, dir);
+        // printf("drone %d moves to spot %d\n", currentDrones->id, dir);
         direction_border_neighbor = border_drone_with_min_drones(neighbors, currentDrones, drones, numdrones, dir, &arrived_to_border); // check if the found drone is border so stop moving if not no
         moveDrones(currentDrones, direction_border_neighbor);
-        // no need to save the path that give the balne becase it is no related to the expansion dir, it is movement o plance so it should not be saved
-        // if we hae drone take path of s5 then paht of s2 and s2 ahaon to achive the balance then we can not consider that s2 is in the path of expanion
-        // if (direction_border_neighbor != 0) // if the drone did not arrive to the border then it border_drone_with_min_drones will return zero dont save it in the movement list
-        //     append_new_step(currentDrones, direction_border_neighbor);
         setDist(neighbors, currentDrones->x, currentDrones->y); // update for the next iteration
     }
 }
 
 void perform_balancing_phase(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
 {
+    int border_drone_matrix[numdrones];
+    int size_border_drone_matrix = 0;
+
+    for (int i = 0; i < numdrones; i++)
+    {
+
+        if ((drones[i].state == 2) || (drones[i].state == 4))
+        {
+            border_drone_matrix[size_border_drone_matrix] = i;
+            size_border_drone_matrix++;
+            int count_drons = 0;
+            for (int j = 0; j < 7; j++)
+            {
+                count_drons = countdronesAtPosition(drones, numdrones, drones[i].x + DIR_VECTORS[j][0], drones[i].y + DIR_VECTORS[j][1]);
+                if (count_drons > 0)
+                {
+                    // Find the index of 'j' in 'allowed_to_goto'
+                    int remove_index = -1;
+                    for (int k = 0; k < drones[i].allowed_neighborsSize; k++)
+                    {
+                        if (drones[i].allowed_to_goto[k] == j)
+                        {
+                            remove_index = k;
+                            break;
+                        }
+                    }
+
+                    // If found, shift elements to the left to remove the item
+                    if (remove_index != -1)
+                    {
+                        for (int k = remove_index; k < drones[i].allowed_neighborsSize - 1; k++)
+                        {
+                            drones[i].allowed_to_goto[k] = drones[i].allowed_to_goto[k + 1];
+                        }
+
+                        // Decrement the size of 'allowed_to_goto'
+                        drones[i].allowed_neighborsSize--;
+                    }
+                }
+            }
+        }
+    }
     for (int i = 0; i < numdrones; i++)
     {
         if (drones[i].state == 1) // drone is free
         {
-            // in this function the steps ist will be again created so in this way we can see how the drone will move
-            // so in this way we reord how the drone moved to the border
             move_free_until_border(&DroneNeighbors[i], drones, &drones[i], numdrones);
         }
     }
+    for (int i = 0; i < numdrones; i++)
+    {
+        if (drones[i].state == 1)
+        {
+            for (int j = 0; j < size_border_drone_matrix; j++)
+            {
+                int border_drone_num = border_drone_matrix[j];
+                if (((drones[border_drone_num].state == 2) || (drones[border_drone_num].state == 4)) &&
+                    float_compare(drones[i].x, drones[border_drone_num].x) && float_compare(drones[i].y, drones[border_drone_num].y))
+
+                {
+                    int copySize = drones[border_drone_num].allowed_neighborsSize;
+                    for (int k = 0; k < copySize; k++)
+                    {
+                        drones[i].allowed_to_goto[k] = drones[border_drone_num].allowed_to_goto[k];
+                    }
+
+                    // If drones[border_drone_num].allowed_to_goto is smaller, fill the rest with zeros
+                    for (int k = copySize; k < 7; k++)
+                    {
+                        drones[i].allowed_to_goto[k] = 0; // Fill with zeros
+                    }
+                    drones[i].allowed_neighborsSize = copySize;
+                }
+            }
+        }
+    }
+
     saveDrones(drones, numdrones, fp);
 }
