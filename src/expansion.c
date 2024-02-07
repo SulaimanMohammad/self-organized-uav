@@ -15,6 +15,98 @@ float DIR_VECTORS[7][2] = {
     {(sqrt3 / 2.0) * a, -(3.0 / 2.0) * a}   // s6
 
 };
+float round_to_decimals_float(float value, int decimals)
+{
+    float scale = powf(10.0f, decimals);
+    return roundf(value * scale) / scale;
+}
+
+// generate random number [A,B[ , b is not included
+float randomFloat(float A, float B)
+{
+    float r = (float)rand() / RAND_MAX;
+    return A + r * (B - A);
+}
+
+int randomInt(int A, int B)
+{
+    return (rand() % (B - A + 1) + A);
+}
+
+int float_compare(float num1, float num2)
+{
+    float epsilon = 0.001f; // precision level you need
+
+    if (fabs(num1 - num2) < epsilon)
+    {
+        return 1; // They are equal
+    }
+    else
+    {
+        return 0; // They are not equal
+    }
+}
+
+void initializeDrones(Drones drones[], int numdrones)
+{
+    // Initialize all drones at the center of the grid
+    for (int i = 0; i < numdrones; i++)
+    {
+        drones[i].id = i;
+        drones[i].x = 0.0;
+        drones[i].y = 0.0;
+        drones[i].state = 1; // free
+        drones[i].targetfound = 0;
+        drones[i].previous_state = 0;
+        drones[i].allowed_neighborsSize = 0;
+        drones[i].allowed_to_goto = (int *)malloc(MAX_SIZE * sizeof(int));
+        for (int j = 0; j < 7; j++)
+        {
+            drones[i].allowed_to_goto[j] = j;
+        }
+        drones[i].allowed_neighborsSize = 7;
+    }
+}
+
+void free_memory_drone(Drones drones[], int numdrones)
+{
+    for (int i = 0; i < numdrones; i++)
+    {
+        if (drones[i].allowed_to_goto != NULL)
+        {
+            free(drones[i].allowed_to_goto);
+            drones[i].allowed_to_goto = NULL; // Set to NULL after freeing
+        }
+    }
+}
+
+void printDrones(Drones drones[], int numdrones)
+{
+    for (int i = 0; i < numdrones; i++)
+    {
+        printf("(%f, %f), ", drones[i].x, drones[i].y);
+    }
+    printf("\n");
+}
+
+void saveDrones(Drones drones[], int numdrones, FILE *fp)
+{
+    for (int i = 0; i < numdrones; i++)
+    {
+        fprintf(fp, "(");
+        fprintf(fp, "%d", i);
+        fprintf(fp, ", ");
+        fprintf(fp, "%.2f", drones[i].x);
+        fprintf(fp, ", ");
+        fprintf(fp, "%.2f", drones[i].y);
+        fprintf(fp, ", ");
+        fprintf(fp, "%d", drones[i].state);
+        fprintf(fp, ", ");
+        fprintf(fp, "%d", drones[i].targetfound);
+        fprintf(fp, "),");
+    }
+    fprintf(fp, "\n");
+}
 
 // Initialize the Neighbors
 void initNeighbors(struct Neighbors *neighbors)
@@ -229,18 +321,6 @@ void findPriority(struct Neighbors *neighbors, char result[MAX_SIZE][MAX_SIZE], 
     *resultSize = count;
 }
 
-// generate random number [A,B[ , b is not included
-float randomFloat(float A, float B)
-{
-    float r = (float)rand() / RAND_MAX;
-    return A + r * (B - A);
-}
-
-int randomInt(int A, int B)
-{
-    return (rand() % (B - A + 1) + A);
-}
-
 void setPriorities(struct Neighbors *neighbors)
 {
     // find the spots closer to the sink to decide how to set the priorities
@@ -385,7 +465,8 @@ void findBorderDroneAround(Drones drones[], Drones *currentDrone, char result[MA
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].x == currentDrone->x + DIR_VECTORS[j][0] && drones[i].y == currentDrone->y + DIR_VECTORS[j][1] && (drones[i].state == 2 || drones[i].state == 3 || drones[i].state == 4))
+
+            if (float_compare(drones[i].x, currentDrone->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrone->y + DIR_VECTORS[j][1]) && (drones[i].state == 2 || drones[i].state == 3 || drones[i].state == 4))
             {
                 char neighbors[3];
                 sprintf(neighbors, "s%d", j);
@@ -472,56 +553,12 @@ void setPriorities_further_expan(Drones drones[], Drones *currentDrone, struct N
     }
 }
 
-void initializeDrones(Drones drones[], int numdrones)
-{
-    // Initialize all drones at the center of the grid
-    for (int i = 0; i < numdrones; i++)
-    {
-        drones[i].id = i;
-        drones[i].x = 0.0;   // randomFloat(0, 1);
-        drones[i].y = 0.0;   // randomFloat(0, 1);
-        drones[i].state = 1; // free
-        drones[i].targetfound = 0;
-        drones[i].num_steps = 0;
-        drones[i].direction_taken = (int *)malloc(0 * sizeof(int)); // allocate memoy
-        drones[i].previous_state = 0;
-    }
-}
-
-void printDrones(Drones drones[], int numdrones)
-{
-    for (int i = 0; i < numdrones; i++)
-    {
-        printf("(%f, %f), ", drones[i].x, drones[i].y);
-    }
-    printf("\n");
-}
-
-void saveDrones(Drones drones[], int numdrones, FILE *fp)
-{
-    for (int i = 0; i < numdrones; i++)
-    {
-        fprintf(fp, "(");
-        fprintf(fp, "%d", i);
-        fprintf(fp, ", ");
-        fprintf(fp, "%.2f", drones[i].x);
-        fprintf(fp, ", ");
-        fprintf(fp, "%.2f", drones[i].y);
-        fprintf(fp, ", ");
-        fprintf(fp, "%d", drones[i].state);
-        fprintf(fp, ", ");
-        fprintf(fp, "%d", drones[i].targetfound);
-        fprintf(fp, "),");
-    }
-    fprintf(fp, "\n");
-}
-
 int countdronesAtPosition(Drones drones[], int numdrones, float x, float y)
 {
     int count = 0;
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].x == x && drones[i].y == y)
+        if (float_compare(drones[i].x, x) && float_compare(drones[i].y, y))
         {
 
             count++;
@@ -535,7 +572,7 @@ int countdronesAtPosition_with_specific_state(Drones drones[], int numdrones, fl
     int count = 0;
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].x == x && drones[i].y == y && (drones[i].state == 2 || drones[i].state == 4))
+        if (float_compare(drones[i].x, x) && float_compare(drones[i].y, y) && (drones[i].state == 2 || drones[i].state == 4))
         {
             count++;
         }

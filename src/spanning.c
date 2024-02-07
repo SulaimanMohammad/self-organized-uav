@@ -116,7 +116,7 @@ void findIrremovableDroneAround(Drones drones[], Drones *currentDrone, char resu
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].x == currentDrone->x + DIR_VECTORS[j][0] && drones[i].y == currentDrone->y + DIR_VECTORS[j][1] && (drones[i].state == 3 || drones[i].state == 4))
+            if (float_compare(drones[i].x, currentDrone->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrone->y + DIR_VECTORS[j][1]) && (drones[i].state == 3 || drones[i].state == 4))
             {
                 char neighbors[3];
                 sprintf(neighbors, "s%d", j);
@@ -136,8 +136,8 @@ void find_num_IrremovableDroneAround(Drones drones[], Drones *currentDrone, int 
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].x == currentDrone->x + DIR_VECTORS[j][0] &&
-                drones[i].y == currentDrone->y + DIR_VECTORS[j][1] &&
+            if (float_compare(drones[i].x, currentDrone->x + DIR_VECTORS[j][0]) &&
+                float_compare(drones[i].y, currentDrone->y + DIR_VECTORS[j][1]) &&
                 (drones[i].state == 3 || drones[i].state == 4) &&
                 drones[i].id != sender_id &&
                 drones[i].id != currentDrones_id)
@@ -159,7 +159,7 @@ int has_irrmovable_drone_around_to_sink(struct Neighbors neighbors[], Drones *cu
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].x == currentDrones->x + DIR_VECTORS[j][0] && drones[i].y == currentDrones->y + DIR_VECTORS[j][1])
+            if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[j][1]))
             {
                 int irrmvbleSize2 = 0;
                 find_num_IrremovableDroneAround(drones, &drones[i], &irrmvbleSize2, numdrones, currentDrones->id, sender_id);
@@ -176,7 +176,7 @@ int has_irrmovable_drone_around_to_sink(struct Neighbors neighbors[], Drones *cu
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].x == currentDrones->x + DIR_VECTORS[j][0] && drones[i].y == currentDrones->y + DIR_VECTORS[j][1])
+            if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[j][1]))
             {
                 int irrmvbleSize2 = 0;
                 find_num_IrremovableDroneAround(drones, &drones[i], &irrmvbleSize2, numdrones, currentDrones->id, sender_id);
@@ -201,7 +201,7 @@ int has_irrmovable_drone_around_to_border(struct Neighbors neighbors[], Drones *
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].x == currentDrones->x + DIR_VECTORS[j][0] && drones[i].y == currentDrones->y + DIR_VECTORS[j][1])
+            if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[j][1]))
             {
                 int irrmvbleSize2 = 0;
                 find_num_IrremovableDroneAround(drones, &drones[i], &irrmvbleSize2, numdrones, currentDrones->id, sender_id);
@@ -218,7 +218,7 @@ int has_irrmovable_drone_around_to_border(struct Neighbors neighbors[], Drones *
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].x == currentDrones->x + DIR_VECTORS[j][0] && drones[i].y == currentDrones->y + DIR_VECTORS[j][1])
+            if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[j][1]))
             {
                 int irrmvbleSize2 = 0;
                 find_num_IrremovableDroneAround(drones, &drones[i], &irrmvbleSize2, numdrones, currentDrones->id, sender_id);
@@ -241,7 +241,7 @@ void findDirofSender(Drones drones[], Drones *currentDrone, char sender_dir[3], 
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].x == currentDrone->x + DIR_VECTORS[j][0] && drones[i].y == currentDrone->y + DIR_VECTORS[j][1] && (drones[i].id == sender_id))
+            if (float_compare(drones[i].x, currentDrone->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrone->y + DIR_VECTORS[j][1]) && (drones[i].id == sender_id))
             {
                 sprintf(sender_dir, "s%d", j);
                 break;
@@ -256,7 +256,7 @@ int check_close_to_sink(Drones drones[], Drones *currentDrones, int numdrones, i
     for (int i = 0; i < numdrones; i++)
     {
         // find what drone it is
-        if (drones[i].x == currentDrones->x + DIR_VECTORS[dir][0] && drones[i].y == currentDrones->y + DIR_VECTORS[dir][1])
+        if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
             if (abs(drones[i].x) < abs(currentDrones->x) && abs(drones[i].y) < abs(currentDrones->y))
             {
@@ -274,7 +274,7 @@ int check_previous_border(Drones drones[], Drones *currentDrones, int numdrones,
     for (int i = 0; i < numdrones; i++)
     {
         // find what drone it is
-        if (drones[i].x == currentDrones->x + DIR_VECTORS[dir][0] && drones[i].y == currentDrones->y + DIR_VECTORS[dir][1])
+        if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
             if ((drones[i].previous_state == 2 || drones[i].previous_state == 4)) // it was a border before
             {
@@ -358,7 +358,7 @@ void build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     }
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].x == currentDrones->x + DIR_VECTORS[dir][0] && drones[i].y == currentDrones->y + DIR_VECTORS[dir][1])
+        if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
             if (drones[i].state == 2) // it is border then make it border and irrmovable
             {
@@ -471,7 +471,7 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
                 for (int i = 0; i < numdrones; i++)
                 {
                     // find what drone it is
-                    if (drones[i].x == currentDrones->x + DIR_VECTORS[j][0] && drones[i].y == currentDrones->y + DIR_VECTORS[j][1])
+                    if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[j][1]))
                     {
                         if ((drones[i].state == 2 || drones[i].state == 4) && (drones[i].previous_state == 2 || drones[i].previous_state == 4))
                         {
@@ -491,7 +491,7 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
 
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].x == currentDrones->x + DIR_VECTORS[dir][0] && drones[i].y == currentDrones->y + DIR_VECTORS[dir][1])
+        if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
             if (drones[i].state == 2) // it is border then make it border and irrmovable
             {
@@ -592,7 +592,7 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
     //  same in real life after reciving a message should check the state of the drone if it is not border it should forward the message
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].x == currentDrones->x + DIR_VECTORS[dir][0] && drones[i].y == currentDrones->y + DIR_VECTORS[dir][1])
+        if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
             if (drones[i].state == 2) // it is border then make it border and irrmovable
             {

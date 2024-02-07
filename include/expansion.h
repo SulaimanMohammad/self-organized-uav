@@ -59,6 +59,7 @@ typedef struct Target
     float x;
     float y;
 } Target;
+int float_compare(float num1, float num2);
 
 // Initialize the Neighbors
 void initNeighbors(struct Neighbors *neighbors);

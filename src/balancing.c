@@ -10,10 +10,10 @@ int count_border_drones_AtPosition(Drones drones[], int numdrones, float x, floa
         // should count all the drones at the neigboor
         // since that contains neigboor not part of border it will be evited
         {
-            if (drones[i].x == x && drones[i].y == y)
+            if (float_compare(drones[i].x, x) && float_compare(drones[i].y, y))
                 count++;
         }
-        if (drones[i].x == x && drones[i].y == y && (drones[i].state == 2 || drones[i].state == 4))
+        if (float_compare(drones[i].x, x) && float_compare(drones[i].y, y) && (drones[i].state == 2 || drones[i].state == 4))
         {
             is_there_border_drone++;
         }
@@ -74,8 +74,8 @@ int border_drone_with_min_drones(struct Neighbors *neighbors, Drones *currentDro
 {
     int direction_to_go = 0; // stay in same place
     for (int i = 0; i < numdrones; i++)
-    {                                                                                                                // since it is for loop will iterate in all the drone but should not consider the drone we are working on
-        if (drones[i].x == currentDrones->x && drones[i].y == currentDrones->y && drones[i].id != currentDrones->id) // check if the drone there is already border
+    {                                                                                                                                          // since it is for loop will iterate in all the drone but should not consider the drone we are working on
+        if (float_compare(drones[i].x, currentDrones->x) && float_compare(drones[i].y, currentDrones->y) && drones[i].id != currentDrones->id) // check if the drone there is already border
         {
             if (drones[i].state == 2 || drones[i].state == 4) // check the drone that share the same spot if it is border
             {
