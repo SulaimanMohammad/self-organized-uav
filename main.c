@@ -8,8 +8,8 @@ int main(int argc, char *argv[])
 {
     FILE *fp;
     fp = fopen("output.txt", "w");
-    srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
-
+    // srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
+    srand(0);
     if (argc < 2)
     {
         printf("Please provide a number of drone as argument ex.\"n=60\" \n");
@@ -32,19 +32,22 @@ int main(int argc, char *argv[])
     //  generates coordiantes of targets
     //  generate_random_targets(targets, targets_size);
 
-    const int targets_size = 8; // Since you have 8 specific targets
+    const int targets_size = 20; // Since you have 8 specific targets
     Target targets[targets_size];
 
     // Coordinates of the specific targets
     float predefinedTargets[8][2] = {
         {0, 85}, {0, -85}, {85, 0}, {-85, 0}, {75, 75}, {75, -75}, {-75, 75}, {-75, -75}};
 
-    // Assign these coordinates to your targets array
-    for (int i = 0; i < targets_size; i++)
-    {
-        targets[i].x = predefinedTargets[i][0];
-        targets[i].y = predefinedTargets[i][1];
-    }
+    // // Assign these coordinates to your targets array
+    // for (int i = 0; i < targets_size; i++)
+    // {
+    //     targets[i].x = predefinedTargets[i][0];
+    //     targets[i].y = predefinedTargets[i][1];
+    // }
+
+    generate_targets(targets, targets_size, NULL);
+    // generate_targets(targets, targets_size, predefinedTargets);
 
     save_targes(targets, targets_size, fp);
 
@@ -64,25 +67,12 @@ int main(int argc, char *argv[])
     These pointers (direction_taken and border_neighbors) are uninitialized .
     Therefore, you will expereience undefined behaviorif passing uninitialized pointers to the append_drones_neighbors_names function, .
     */
-    for (int i = 0; i < numdrones; i++)
-    {
-        drones[i].direction_taken = NULL;  // Initialize direction_taken pointer
-        drones[i].border_neighbors = NULL; // Initialize border_neighbors pointer
-        drones[i].num_neighbors = 0;       // Initialize num_neighbors
-        drones[i].num_steps = 0;           // Initialize num_neighbors
-        drones[i].direction_dominated = 0;
-        for (int j = 0; j < 3; j++)
-        {
-            drones[i].border_irrrmovable[j] = 0;
-            drones[i].to_check[j] = 0;
-        }
-    }
     // spread from the sink;
     for (int i = 0; i < numdrones; i++)
     {
         int dir = randomInt(1, 6); // remeber dir are from 0-6 but here number is between 1-6 so no drone start at the sink because that will lead to worng pripority
+        // printf(" drone %d goes to %d\n", drones[i].id, dir);
         moveDrones(&drones[i], dir);
-        append_new_step(&drones[i], dir);
     }
     saveDrones(drones, numdrones, fp);
 
@@ -115,11 +105,15 @@ int main(int argc, char *argv[])
     {
         num_drones_border_irrmovable = 0;
         perform_further_expansion(drones, DroneNeighbors, numdrones, fp);
+        printf(" \n\n furthere expansion done \n\nn");
+
         // another finiding border
         form_further_border_and_update_states(drones, DroneNeighbors, numdrones, targets, targets_size, fp);
+        printf(" \n\n furthere form_further_border_and_update_states done \n\nn");
         // // another balancing
         perform_further_spanning(drones, DroneNeighbors, numdrones, fp);
         perform_balancing_phase(drones, DroneNeighbors, numdrones, fp);
+        printf(" \n\n perform_balancing_phase done \n\nn");
 
         for (int i = 0; i < numdrones; i++)
         {
@@ -134,14 +128,7 @@ int main(int argc, char *argv[])
     }
     saveDrones(drones, numdrones, fp);
 
-    // free border_neighbors
-    for (int i = 0; i < numdrones; i++)
-    {
-        if (drones[i].num_neighbors != 0)
-            reset_drones_neighbors_names(&drones[i]);
-        if (drones[i].num_steps != 0)
-            reset_steps(&drones[i]);
-    }
+    free_memory_drone(drones, numdrones);
     printf("--------------------------------------------------------------------\n");
     printf(" ----------Drones positions are calculated in all phaes----------\n");
     printf("--------------------------------------------------------------------\n");

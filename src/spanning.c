@@ -110,6 +110,7 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targ
         if (isPointInsideHexagon(targets[i].x, targets[i].y, currentDrones->x, currentDrones->y))
         // if (currentDrones->x == targets[i].x && currentDrones->y == targets[i].y)
         {
+            targets[i].found = true;
             currentDrones->targetfound = 1;
             previous_state = currentDrones->state;
 
@@ -120,7 +121,7 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targ
             if (currentDrones->state == 2) // drone is in border state
             {
                 currentDrones->state = 4; // drone is irrmovable and border
-                update_irrmovable_border_state(drones, &drones[i], numdrones);
+                // update_irrmovable_border_state(drones, &drones[i], numdrones);
             }
             if (currentDrones->state != previous_state)
                 currentDrones->previous_state = previous_state;
@@ -492,7 +493,7 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
                     // find what drone it is
                     if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[j][1]))
                     {
-                        if ((drones[i].state == 2 || drones[i].state == 4) && (drones[i].previous_state == 2 || drones[i].previous_state == 4))
+                        if ((drones[i].state == 2 || drones[i].state == 4) && (drones[i].previous_state == 2 || drones[i].previous_state == 4 || drones[i].previous_state == 3))
                         {
                             border = 1;
                             break;
@@ -519,12 +520,14 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
                 // you should go to the sink
                 return build_path_to_sink_further(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
-            else if (drones[i].state == 3 || drones[i].state == 4 && (drones[i].previous_state == 2 || drones[i].previous_state == 4))
+            else if (drones[i].state == 3 || drones[i].state == 4 && (drones[i].previous_state == 2 || drones[i].previous_state == 4 || drones[i].previous_state == 3))
             {
+                // printf("    drone %d , return no change\n", drones[i].id);
                 return;
             }
             else
             {
+                // printf("    drone %d , change to be 3 with state %d and previous %d\n", drones[i].id, drones[i].state, drones[i].previous_state);
                 drones[i].state = 3;
                 currentDrones->previous_state = 3; // this is to avoid considrringg what already done as a new target
                                                    // see what happen without it // and no need to try to conider the road each iteration
@@ -545,6 +548,7 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
     // no need to do so if the drone is irrmovable and border
     if (currentDrones->state == 4 || currentDrones->state == 2) //|| currentDrones->previous_state == 3) // stop the recursion when arrive to border
     {
+        // printf(" retrun drone %d ,state %d \n", currentDrones->id, currentDrones->state);
         return;
     }
     int dir = 0;
@@ -658,19 +662,24 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
 
 void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
 {
+    // printf(" to sink \n");
     for (int i = 0; i < numdrones; i++)
     {
+        // printf(" drone %d , with state %d , prevoious s %d\n  ", drones[i].id, drones[i].state, drones[i].previous_state);
         if (drones[i].state == 3 || drones[i].state == 4)
         {
             set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
             build_path_to_sink_further(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
         }
     }
+    // printf(" to border \n");
 
     for (int i = 0; i < numdrones; i++)
     {
+
         if (drones[i].state == 3 || drones[i].state == 4)
         {
+            // printf(" drone %d , with state %d\n", drones[i].id, drones[i].state);
             set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
             build_path_to_border(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
         }
