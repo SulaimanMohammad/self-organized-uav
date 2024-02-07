@@ -5,6 +5,7 @@
 #include <time.h>
 #include <math.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define C 100
 #define eps 20
@@ -58,6 +59,7 @@ typedef struct Target
 {
     float x;
     float y;
+    bool found;
 } Target;
 int float_compare(float num1, float num2);
 

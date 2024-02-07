@@ -2,7 +2,7 @@
 #define SPANNING_H
 #include "expansion.h"
 int isDuplicate(Target *objects, int size, float x, float y);
-void generate_random_targets(Target *targets, int targets_size);
+void generate_targets(Target *targets, int targets_size, float (*predefinedTargets)[2]);
 void save_targes(Target *targets, int targets_size, FILE *fp);
 void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targets, int targets_size, int numdrones);
 void findIrremovableDroneAround(Drones drones[], Drones *currentDrone, char result[MAX_SIZE][MAX_SIZE], int *irrmvble_id, int *resultSize, int numdrones);

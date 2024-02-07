@@ -17,27 +17,46 @@ int isDuplicate(Target *objects, int size, float x, float y)
 }
 
 // // generate targets
-void generate_random_targets(Target *targets, int targets_size)
+void generate_targets(Target *targets, int targets_size, float (*predefinedTargets)[2])
 {
-    int n = targets_size * 0.50; // to detrmine
-    int dir1, dir2;
-    int mult1, mult2;
-    for (int i = 0; i < targets_size; i++)
+    if (predefinedTargets == NULL)
     {
-        float x, y;
-        do
+        printf(" Generate random targets \n ");
+        int n = targets_size * 0.50; // to detrmine
+        int dir1, dir2;
+        int mult1, mult2;
+        for (int i = 0; i < targets_size; i++)
         {
-            dir1 = rand() % (6 + 1);
-            dir2 = rand() % (6 + 1);
-            mult1 = (rand() % (n + 1));
-            mult2 = (rand() % (n + 1)); // Generate a random value between 0 and n (inclusive)
-            x = mult1 * DIR_VECTORS[dir1][0];
-            y = mult1 * DIR_VECTORS[dir1][1];
+            float x, y;
+            do
+            {
+                dir1 = rand() % (6 + 1);
+                dir2 = rand() % (6 + 1);
+                mult1 = (rand() % (n + 1));
+                mult2 = (rand() % (n + 1)); // Generate a random value between 0 and n (inclusive)
+                x = mult1 * DIR_VECTORS[dir1][0];
+                y = mult1 * DIR_VECTORS[dir1][1];
 
-        } while ((abs(x) < 1000 && abs(y) < 1000) && isDuplicate(targets, i, x, y));
+            } while ((abs(x) < 1000 && abs(y) < 1000) && isDuplicate(targets, i, x, y));
 
-        targets[i].x = x;
-        targets[i].y = y;
+            targets[i].x = x;
+            targets[i].y = y;
+            targets[i].found = false;
+        }
+    }
+    else
+    {
+        // Use predefined targets
+        // Ensure that the predefinedTargets pointer is not NULL
+        if (predefinedTargets != NULL)
+        {
+            for (int i = 0; i < targets_size && i < 8; i++)
+            { // Assuming there are 8 predefined targets
+                targets[i].x = predefinedTargets[i][0];
+                targets[i].y = predefinedTargets[i][1];
+                targets[i].found = false;
+            }
+        }
     }
 }
 
