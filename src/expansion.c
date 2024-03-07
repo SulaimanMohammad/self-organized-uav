@@ -3,15 +3,14 @@
 
 // Define the unit vectors for each direction
 // which is the 6 negihboors with respect of the drone position
-#define sqrt3 1.732
 float DIR_VECTORS[7][2] = {
-    {0, 0},                                 // s0 // dont move stay
-    {(sqrt3 * a), 0},                       // s1
-    {(sqrt3 / 2.0) * a, (3.0 / 2.0) * a},   // s2
-    {-(sqrt3 / 2.0) * a, (3.0 / 2.0) * a},  // s3
-    {-sqrt3 * a, 0},                        // s4
-    {-(sqrt3 / 2.0) * a, -(3.0 / 2.0) * a}, // s5
-    {(sqrt3 / 2.0) * a, -(3.0 / 2.0) * a}   // s6
+    {0, 0},                                         // s0 // dont move stay
+    {a, 0},                                         // s1
+    {(1.0 / 2.0) * a, (3.0 / 2.0) * effective_a},   // s2
+    {-(1.0 / 2.0) * a, (3.0 / 2.0) * effective_a},  // s3
+    {-1 * a, 0},                                    // s4
+    {-(1.0 / 2.0) * a, -(3.0 / 2.0) * effective_a}, // s5
+    {(1.0 / 2.0) * a, -(3.0 / 2.0) * effective_a}   // s6
 
 };
 // generate random number [A,B[ , b is not included
@@ -672,8 +671,8 @@ void find_border_further_update_drone_state(Drones drones[], struct Neighbors *n
     if (currentDrones->x == 0.0 && currentDrones->y == 0.0) // TODO that should be doen only if no target found
     {
         currentDrones->state = 3;
-        currentDrones->state = 1; // free state
-        // free(currentDrones->allowed_to_goto);
+        // currentDrones->state = 1; // free state
+        //  free(currentDrones->allowed_to_goto);
 
         for (int j = 0; j < 7; j++)
         {

@@ -9,7 +9,10 @@
 
 #define C 100
 #define eps 20
+
+#define sqrt3 1.732
 #define a 20
+#define effective_a ((int)(a / sqrt3 * 1000) / 1000.0)
 #define MAX_SIZE 7
 
 enum Direction
