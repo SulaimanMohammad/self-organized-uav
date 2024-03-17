@@ -1,10 +1,23 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
+
 import matplotlib.patches as patches
 import os
+import sys
 
 directory = 'animation_result'
+
+# Check if enough arguments are passed
+if len(sys.argv) < 3:
+    print("Usage: python plot_data.py <n> <a>")
+    sys.exit(1)
+
+# Assuming the first argument is the script name, the second is 'n', and the third is 'a'
+n = int(sys.argv[1])
+a = float(sys.argv[2])  # Convert 'a' to float, assuming 'a' could be a decimal
+R_c= int(a / (1.732) * 10000.0) / 10000.0
+
 
 # Create the directory if it doesn't exist
 if not os.path.exists(directory):
@@ -46,7 +59,6 @@ colors =  ['g', 'b', 'c', 'm', 'y', 'aqua', 'aquamarine', 'azure', 'bisque', 'bl
                    'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'springgreen',
                    'steelblue', 'tan', 'teal', 'thistle', 'turquoise', 'violet', 'wheat', 'yellow',
                    'yellowgreen'] * len(stage_points)# List of colors for each stage
-
 fig, ax = plt.subplots()
 # save tagret
 points = points_list[0]
@@ -63,7 +75,7 @@ def get_hexagon_vertices(center, side_length):
 def draw_initial_hexagons(points):
     """Draw hexagons for each point in the initial set of points."""
     for point in points:
-        hexagon_vertices = get_hexagon_vertices((point[1], point[2]), 20)
+        hexagon_vertices = get_hexagon_vertices((point[1], point[2]), R_c)
         hexagon = patches.Polygon(hexagon_vertices, closed=True, fill=False, edgecolor='blue')
         ax.add_patch(hexagon)
         stored_hexagons.append(hexagon)  # Store the hexagon
@@ -72,7 +84,7 @@ draw_initial_hexagons(points_list[1])
 
 def draw_hexagon(point, edgecolor='blue'):
     """Draw a hexagon at the given point and store it."""
-    hexagon_vertices = get_hexagon_vertices(point, 20)
+    hexagon_vertices = get_hexagon_vertices(point, R_c)
     hexagon = patches.Polygon(hexagon_vertices, closed=True, fill=False, edgecolor=edgecolor)
     ax.add_patch(hexagon)
     stored_hexagons.append(hexagon)
@@ -129,12 +141,11 @@ def update(frame):
     ax.grid(True)
     # Set the title for the current stage
     ax.set_title(f"Stage {frame+1}")
-    fig.savefig(os.path.join(directory, f'frame_{frame}.jpg'), dpi=300, format='jpg')
+    fig.savefig(os.path.join(directory, f'frame_{frame}.jpg'))
 
 
 # Create the animation object
 ani = FuncAnimation(fig, update, frames=len(points_list), interval=1000, repeat=False)
-
 ani.save(os.path.join(directory, 'animation.mp4'), fps=1)
 plt.show()
 
