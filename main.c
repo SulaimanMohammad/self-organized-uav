@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     //  generates coordiantes of targets
     //  generate_random_targets(targets, targets_size);
 
-    const int targets_size = 20; // Since you have 8 specific targets
+    const int targets_size = 8; // Since you have 8 specific targets
     Target targets[targets_size];
 
     // Coordinates of the specific targets
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     //     targets[i].y = predefinedTargets[i][1];
     // }
 
-    generate_targets(targets, targets_size, NULL);
+    generate_targets(targets, targets_size, predefinedTargets);
     // generate_targets(targets, targets_size, predefinedTargets);
 
     save_targes(targets, targets_size, fp);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     int num_drones_border_irrmovable = 0;
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].state == 2 || drones[i].state == 3 || drones[i].state == 4)
+        if (drones[i].state == Border || drones[i].state == Irremovable || drones[i].state == Irremovable_border)
             num_drones_border_irrmovable++;
     }
     int round = 0;
@@ -117,12 +117,12 @@ int main(int argc, char *argv[])
 
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].state == 2 || drones[i].state == 3 || drones[i].state == 4)
+            if (drones[i].state == Border || drones[i].state == Irremovable || drones[i].state == Irremovable_border)
                 num_drones_border_irrmovable++;
         }
         for (int i = 0; i < numdrones; i++)
         {
-            if (drones[i].previous_state != 3)
+            if (drones[i].previous_state != Irremovable)
                 drones[i].previous_state = drones[i].state;
         }
     }
