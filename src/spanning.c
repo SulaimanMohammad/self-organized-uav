@@ -93,7 +93,7 @@ bool isPointInsideHexagon(float pointX, float pointY, float centerX, float cente
         float rotatedY = centerY + (pointX - centerX) * sin(angle) + (pointY - centerY) * cos(angle);
 
         // Check distance to the vertical line going through the hexagon center
-        if (fabs(rotatedX - centerX) > a * SQRT_3_OVER_2)
+        if (fabs(rotatedX - centerX) > effective_a * SQRT_3_OVER_2)
         {
             return false;
         }
@@ -114,13 +114,13 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targ
             currentDrones->targetfound = 1;
             previous_state = currentDrones->state;
 
-            if (currentDrones->state == 0 || currentDrones->state == 1) // drone is in free or alone state
+            if (currentDrones->state == Alone || currentDrones->state == Free) // drone is in free or alone state
             {
-                currentDrones->state = 3; // drone is irrmovable
+                currentDrones->state = Irremovable; // drone is irrmovable
             }
-            if (currentDrones->state == 2) // drone is in border state
+            if (currentDrones->state == Border) // drone is in border state
             {
-                currentDrones->state = 4; // drone is irrmovable and border
+                currentDrones->state = Irremovable_border; // drone is irrmovable and border
                 // update_irrmovable_border_state(drones, &drones[i], numdrones);
             }
             if (currentDrones->state != previous_state)
@@ -136,7 +136,7 @@ void findIrremovableDroneAround(Drones drones[], Drones *currentDrone, char resu
     {
         for (int i = 0; i < numdrones; i++)
         {
-            if (float_compare(drones[i].x, currentDrone->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrone->y + DIR_VECTORS[j][1]) && (drones[i].state == 3 || drones[i].state == 4))
+            if (float_compare(drones[i].x, currentDrone->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrone->y + DIR_VECTORS[j][1]) && (drones[i].state == Irremovable || drones[i].state == Irremovable_border))
             {
                 char neighbors[3];
                 sprintf(neighbors, "s%d", j);
@@ -158,7 +158,7 @@ void find_num_IrremovableDroneAround(Drones drones[], Drones *currentDrone, int 
         {
             if (float_compare(drones[i].x, currentDrone->x + DIR_VECTORS[j][0]) &&
                 float_compare(drones[i].y, currentDrone->y + DIR_VECTORS[j][1]) &&
-                (drones[i].state == 3 || drones[i].state == 4) &&
+                (drones[i].state == Irremovable || drones[i].state == Irremovable_border) &&
                 drones[i].id != sender_id &&
                 drones[i].id != currentDrones_id)
             {
@@ -296,7 +296,7 @@ int check_previous_border(Drones drones[], Drones *currentDrones, int numdrones,
         // find what drone it is
         if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
-            if ((drones[i].previous_state == 2 || drones[i].previous_state == 4)) // it was a border before
+            if ((drones[i].previous_state == Border || drones[i].previous_state == Irremovable_border)) // it was a border before
             {
                 previous_border = 1;
                 break;
@@ -317,7 +317,7 @@ void build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
         distant_of_object = neighbors[currentDrones->id].distances[0];
     }
 
-    if ((currentDrones->x == 0 && currentDrones->y == 0) || (currentDrones->previous_state == 3)) // stop the recursion when arrive to sink
+    if ((currentDrones->x == 0 && currentDrones->y == 0) || (currentDrones->previous_state == Irremovable)) // stop the recursion when arrive to sink
     {
         return;
     }
@@ -380,22 +380,22 @@ void build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     {
         if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
-            if (drones[i].state == 2) // it is border then make it border and irrmovable
+            if (drones[i].state == Border) // it is border then make it border and irrmovable
             {
-                drones[i].state = 4;
-                currentDrones->previous_state = 3;
+                drones[i].state = Irremovable_border;
+                currentDrones->previous_state = Irremovable;
                 // you should go to the sink
                 return build_path_to_sink(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
-            else if (drones[i].state == 3 || drones[i].state == 4)
+            else if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
             {
                 return; // arrived to drone with irrmovable state
             }
             else
             {
                 // printf(" go in else \n");
-                drones[i].state = 3;
-                currentDrones->previous_state = 3;
+                drones[i].state = Irremovable;
+                currentDrones->previous_state = Irremovable;
                 return build_path_to_sink(neighbors, &drones[i], drones, numdrones, currentDrones->id);
                 // saveDrones(drones, numdrones, fp);
             }
@@ -415,7 +415,7 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
         distant_of_object = neighbors[currentDrones->id].distances[0];
     }
 
-    if ((currentDrones->x == 0 && currentDrones->y == 0) || (currentDrones->previous_state == 3)) // stop the recursion when arrive to sink
+    if ((currentDrones->x == 0 && currentDrones->y == 0) || (currentDrones->previous_state == Irremovable)) // stop the recursion when arrive to sink
     {
         return;
     }
@@ -493,7 +493,7 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
                     // find what drone it is
                     if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[j][1]))
                     {
-                        if ((drones[i].state == 2 || drones[i].state == 4) && (drones[i].previous_state == 2 || drones[i].previous_state == 4 || drones[i].previous_state == 3))
+                        if ((drones[i].state == Border || drones[i].state == Irremovable_border) && (drones[i].previous_state == Border || drones[i].previous_state == Irremovable_border || drones[i].previous_state == Irremovable))
                         {
                             border = 1;
                             break;
@@ -513,14 +513,14 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
     {
         if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
-            if (drones[i].state == 2) // it is border then make it border and irrmovable
+            if (drones[i].state == Border) // it is border then make it border and irrmovable
             {
-                drones[i].state = 4;
-                currentDrones->previous_state = 3;
+                drones[i].state = Irremovable_border;
+                currentDrones->previous_state = Irremovable;
                 // you should go to the sink
                 return build_path_to_sink_further(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
-            else if (drones[i].state == 3 || drones[i].state == 4 && (drones[i].previous_state == 2 || drones[i].previous_state == 4 || drones[i].previous_state == 3))
+            else if (drones[i].state == Irremovable || drones[i].state == Irremovable_border && (drones[i].previous_state == Border || drones[i].previous_state == Irremovable_border || drones[i].previous_state == Irremovable))
             {
                 // printf("    drone %d , return no change\n", drones[i].id);
                 return;
@@ -528,9 +528,9 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
             else
             {
                 // printf("    drone %d , change to be 3 with state %d and previous %d\n", drones[i].id, drones[i].state, drones[i].previous_state);
-                drones[i].state = 3;
-                currentDrones->previous_state = 3; // this is to avoid considrringg what already done as a new target
-                                                   // see what happen without it // and no need to try to conider the road each iteration
+                drones[i].state = Irremovable;
+                currentDrones->previous_state = Irremovable; // this is to avoid considrringg what already done as a new target
+                                                             // see what happen without it // and no need to try to conider the road each iteration
                 return build_path_to_sink_further(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
         }
@@ -546,7 +546,7 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
     // printf("curre_drone %d \n", currentDrones->id);
     set_num_drones_at_neighbors(drones, &neighbors[currentDrones->id], currentDrones, numdrones);
     // no need to do so if the drone is irrmovable and border
-    if (currentDrones->state == 4 || currentDrones->state == 2) //|| currentDrones->previous_state == 3) // stop the recursion when arrive to border
+    if (currentDrones->state == Irremovable_border || currentDrones->state == Border) //|| currentDrones->previous_state == 3) // stop the recursion when arrive to border
     {
         // printf(" retrun drone %d ,state %d \n", currentDrones->id, currentDrones->state);
         return;
@@ -617,20 +617,20 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
     {
         if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
-            if (drones[i].state == 2) // it is border then make it border and irrmovable
+            if (drones[i].state == Border) // it is border then make it border and irrmovable
             {
-                drones[i].state = 4;
-                currentDrones->previous_state = 3;
+                drones[i].state = Irremovable_border;
+                currentDrones->previous_state = Irremovable;
                 return; // build_path_to_border(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
-            else if (drones[i].state == 3 || drones[i].state == 4)
+            else if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
             {
                 return; // arrived to drone with irrmovable state
             }
             else
             {
-                drones[i].state = 3;
-                currentDrones->previous_state = 3;
+                drones[i].state = Irremovable;
+                currentDrones->previous_state = Irremovable;
                 return build_path_to_border(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
         }
@@ -642,7 +642,7 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
 {
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].state == 3 || drones[i].state == 4)
+        if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
         {
             set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
             build_path_to_sink(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
@@ -651,7 +651,7 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
     // saveDrones(drones, numdrones, fp);
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].state == 3 || drones[i].state == 4)
+        if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
         {
             set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
             build_path_to_border(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
@@ -666,7 +666,7 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
     for (int i = 0; i < numdrones; i++)
     {
         // printf(" drone %d , with state %d , prevoious s %d\n  ", drones[i].id, drones[i].state, drones[i].previous_state);
-        if (drones[i].state == 3 || drones[i].state == 4)
+        if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
         {
             set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
             build_path_to_sink_further(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
@@ -677,7 +677,7 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
     for (int i = 0; i < numdrones; i++)
     {
 
-        if (drones[i].state == 3 || drones[i].state == 4)
+        if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
         {
             // printf(" drone %d , with state %d\n", drones[i].id, drones[i].state);
             set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);

@@ -13,7 +13,7 @@ int count_border_drones_AtPosition(Drones drones[], int numdrones, float x, floa
             if (float_compare(drones[i].x, x) && float_compare(drones[i].y, y))
                 count++;
         }
-        if (float_compare(drones[i].x, x) && float_compare(drones[i].y, y) && (drones[i].state == 2 || drones[i].state == 4))
+        if (float_compare(drones[i].x, x) && float_compare(drones[i].y, y) && (drones[i].state == Border || drones[i].state == Irremovable_border))
         {
             is_there_border_drone++;
         }
@@ -79,7 +79,7 @@ int border_drone_with_min_drones(struct Neighbors *neighbors, Drones *currentDro
         if (float_compare(drones[i].x, currentDrones->x) && float_compare(drones[i].y, currentDrones->y) && drones[i].id != currentDrones->id) // check if the drone there is already border
         {
 
-            if (drones[i].state == 2 || drones[i].state == 4) // check the drone that share the same spot if it is border
+            if (drones[i].state == Border || drones[i].state == Irremovable_border) // check the drone that share the same spot if it is border
             {
                 set_num_drones_border_at_neighbors(drones, neighbors, &drones[i], numdrones);
                 direction_to_go = dir_minimum_drones_in_border_neigboor(neighbors);
@@ -128,7 +128,7 @@ void perform_balancing_phase(Drones drones[], struct Neighbors DroneNeighbors[],
     for (int i = 0; i < numdrones; i++)
     {
 
-        if ((drones[i].state == 2) || (drones[i].state == 4))
+        if ((drones[i].state == Border) || (drones[i].state == Irremovable_border))
         {
             border_drone_matrix[size_border_drone_matrix] = i;
             size_border_drone_matrix++;
@@ -166,7 +166,7 @@ void perform_balancing_phase(Drones drones[], struct Neighbors DroneNeighbors[],
     }
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].state == 1) // drone is free
+        if (drones[i].state == Free) // drone is free
         {
             move_free_until_border(&DroneNeighbors[i], drones, &drones[i], numdrones);
         }
@@ -178,7 +178,7 @@ void perform_balancing_phase(Drones drones[], struct Neighbors DroneNeighbors[],
             for (int j = 0; j < size_border_drone_matrix; j++)
             {
                 int border_drone_num = border_drone_matrix[j];
-                if (((drones[border_drone_num].state == 2) || (drones[border_drone_num].state == 4)) &&
+                if (((drones[border_drone_num].state == Border) || (drones[border_drone_num].state == Irremovable_border)) &&
                     float_compare(drones[i].x, drones[border_drone_num].x) && float_compare(drones[i].y, drones[border_drone_num].y))
 
                 {
