@@ -665,7 +665,7 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
 
         if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
         {
-            s set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
+            set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
             build_path_to_border(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
         }
     }

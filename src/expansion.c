@@ -27,7 +27,7 @@ int randomInt(int A, int B)
 
 int float_compare(float num1, float num2)
 {
-    float epsilon = 0.001f; // precision level you need
+    float epsilon = 0.01f; // precision level you need
 
     if (fabs(num1 - num2) < epsilon)
     {
