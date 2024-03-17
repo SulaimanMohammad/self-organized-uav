@@ -11,8 +11,6 @@
 #define eps 20
 
 #define sqrt3 1.732
-#define a 20
-#define effective_a ((int)(a / sqrt3 * 1000.0) / 1000.0)
 #define MAX_SIZE 7
 
 #define Alone 0
@@ -21,6 +19,8 @@
 #define Irremovable 3
 #define Irremovable_border 4
 
+#define a 20
+#define effective_a ((int)(a / sqrt3 * 10000.0) / 10000.0)
 enum Direction
 {
     s0,
