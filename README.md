@@ -1,9 +1,12 @@
 # Self-organized Disaster Management System by Distributed Deployment of Connected UAVs
 Run the bash script it will create build directory and run the code and also run python script to plot the data
+
 ```bash
-./run.sh n=number
+./run.sh n=number a=communication radius
 ```
-where "n" is the number of drons
+where "n" is the number of drons, "a" communication range between drones and their neighbors
+
+Note:if a was not provided then it will take value of 20 
 
 ## Citations
 This project is based on following paper with modifications:
