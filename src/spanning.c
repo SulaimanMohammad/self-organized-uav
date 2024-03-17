@@ -62,7 +62,6 @@ void generate_targets(Target *targets, int targets_size, float (*predefinedTarge
 
 void save_targes(Target *targets, int targets_size, FILE *fp)
 {
-    // Print the generated targets
     for (int i = 0; i < targets_size; i++)
     {
 
@@ -108,20 +107,18 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targ
     for (int i = 0; i < targets_size; i++)
     {
         if (isPointInsideHexagon(targets[i].x, targets[i].y, currentDrones->x, currentDrones->y))
-        // if (currentDrones->x == targets[i].x && currentDrones->y == targets[i].y)
         {
             targets[i].found = true;
             currentDrones->targetfound = 1;
             previous_state = currentDrones->state;
 
-            if (currentDrones->state == Alone || currentDrones->state == Free) // drone is in free or alone state
+            if (currentDrones->state == Alone || currentDrones->state == Free)
             {
-                currentDrones->state = Irremovable; // drone is irrmovable
+                currentDrones->state = Irremovable;
             }
-            if (currentDrones->state == Border) // drone is in border state
+            if (currentDrones->state == Border)
             {
-                currentDrones->state = Irremovable_border; // drone is irrmovable and border
-                // update_irrmovable_border_state(drones, &drones[i], numdrones);
+                currentDrones->state = Irremovable_border;
             }
             if (currentDrones->state != previous_state)
                 currentDrones->previous_state = previous_state;
@@ -257,7 +254,7 @@ void findDirofSender(Drones drones[], Drones *currentDrone, char sender_dir[3], 
 {
 
     int count = 0;
-    for (int j = 1; j < 7; j++) // need to check the number in each neigboor and add to spot_num_drones in neigboor of the Drones
+    for (int j = 1; j < 7; j++)
     {
         for (int i = 0; i < numdrones; i++)
         {
@@ -310,7 +307,6 @@ void build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
 {
     // the drone that found object and start finding the path to the sink
     int distant_of_object = 0;
-    //
 
     if (currentDrones->id == sender_id)
     {
@@ -326,7 +322,7 @@ void build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     char irrmvble_dir[MAX_SIZE][MAX_SIZE];
     int irrmvble_id[6]; // all id  of irrmovable
     int irrmvbleSize = 0;
-    setDist(&neighbors[currentDrones->id], currentDrones->x, currentDrones->y); // update for the next iteration                                                        // find the spots closer to the sink to decide how to set the priorities
+    setDist(&neighbors[currentDrones->id], currentDrones->x, currentDrones->y);
     char closeSink[MAX_SIZE][MAX_SIZE];
     int closeSinkSize = 0;
     findMinDistances(&neighbors[currentDrones->id], closeSink, &closeSinkSize);
@@ -548,7 +544,6 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
     // no need to do so if the drone is irrmovable and border
     if (currentDrones->state == Irremovable_border || currentDrones->state == Border) //|| currentDrones->previous_state == 3) // stop the recursion when arrive to border
     {
-        // printf(" retrun drone %d ,state %d \n", currentDrones->id, currentDrones->state);
         return;
     }
     int dir = 0;
@@ -608,10 +603,6 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
         }
     }
 
-    // if (dir == 0)
-    // {
-    //     dir = has_irrmovable_drone_around_to_border(neighbors, currentDrones, drones, numdrones, sender_id);
-    // }
     //  same in real life after reciving a message should check the state of the drone if it is not border it should forward the message
     for (int i = 0; i < numdrones; i++)
     {
@@ -621,7 +612,7 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
             {
                 drones[i].state = Irremovable_border;
                 currentDrones->previous_state = Irremovable;
-                return; // build_path_to_border(neighbors, &drones[i], drones, numdrones, currentDrones->id);
+                return;
             }
             else if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
             {
@@ -635,7 +626,6 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
             }
         }
     }
-    // }
 }
 
 void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
@@ -648,7 +638,6 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
             build_path_to_sink(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
         }
     }
-    // saveDrones(drones, numdrones, fp);
     for (int i = 0; i < numdrones; i++)
     {
         if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
@@ -662,25 +651,21 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
 
 void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
 {
-    // printf(" to sink \n");
     for (int i = 0; i < numdrones; i++)
     {
-        // printf(" drone %d , with state %d , prevoious s %d\n  ", drones[i].id, drones[i].state, drones[i].previous_state);
         if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
         {
             set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
             build_path_to_sink_further(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
         }
     }
-    // printf(" to border \n");
 
     for (int i = 0; i < numdrones; i++)
     {
 
         if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
         {
-            // printf(" drone %d , with state %d\n", drones[i].id, drones[i].state);
-            set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
+            s set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
             build_path_to_border(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
         }
     }

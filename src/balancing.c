@@ -33,7 +33,7 @@ void set_num_drones_border_at_neighbors(Drones drones[], struct Neighbors *neigh
         count_drons = count_border_drones_AtPosition(drones, numdrones, currentDrones->x + DIR_VECTORS[j][0], currentDrones->y + DIR_VECTORS[j][1]);
         if (count_drons > 0)
         {
-            setStatus(neighbors, neighbors->keys[j], "o", count_drons); // neighborsionaries[i].spot_num_drones[j]
+            setStatus(neighbors, neighbors->keys[j], "o", count_drons);
         }
         else
         {
@@ -48,7 +48,7 @@ int dir_minimum_drones_in_border_neigboor(struct Neighbors *neighbors)
     char *spot;
     int count;
     spot = neighbors->keys[0];
-    /*the resason of puting -1 because where the drone will arive to border then it will count itself also so that means 2 in the sopt
+    /*the resason of puting -1 because where the drone will arrive to border then it will count itself also so that means 2 in the sopt
     so the the check should be based on the number of drones on the niegbor out of counting the drone do that
     the reason it is important , for the path of the expasnsion
     suppose a drone arrived to a spot of border then withut using -1 then it will use to other border is occupied by the drone of the border because the count will =1 while where the drone is=2
@@ -57,8 +57,8 @@ int dir_minimum_drones_in_border_neigboor(struct Neighbors *neighbors)
     count = neighbors->spot_num_drones[0] - 1;
     // the number of drone in each neigboor stored in variable "spot_num_drones"
     for (int i = 0; i < neighbors->size; i++)
-    {                                                                                   // need to check the spot, and the drone there if it is border because the neigboor can contain non-border drone
-        if (neighbors->spot_num_drones[i] > 0 && neighbors->spot_num_drones[i] < count) // neighbors->spot_num_drones >0 means it is border ( see count_border_drones_AtPosition )
+    {
+        if (neighbors->spot_num_drones[i] > 0 && neighbors->spot_num_drones[i] < count)
         {
             count = neighbors->spot_num_drones[i];
             spot = neighbors->keys[i]; // save the name of the spot that has minimum number
@@ -108,12 +108,11 @@ void move_free_until_border(struct Neighbors *neighbors, Drones drones[], Drones
         int direction_border_neighbor;
         // check if the drone is alone or nots ( no need to check for being alone because that start with free after spanning and expansion )
         // and also the drone will go to somewhere where it will stay on the border so it wll not be alone
-        setDist(neighbors, currentDrones->x, currentDrones->y); // update for the next iteration
+        setDist(neighbors, currentDrones->x, currentDrones->y);
         // no need to check the num_drones_at_neighbors or to find priority because we need to go the border not to couver
         findMaxDistances(neighbors, closeBorder, &closeBorderSize); // find spot that is far from the sink ( towards the border)
         sscanf(closeBorder[0], "s%d", &dir);
         moveDrones(currentDrones, dir);
-        // printf("drone %d moves to spot %d\n", currentDrones->id, dir);
         direction_border_neighbor = border_drone_with_min_drones(neighbors, currentDrones, drones, numdrones, dir, &arrived_to_border); // check if the found drone is border so stop moving if not no
         moveDrones(currentDrones, direction_border_neighbor);
         setDist(neighbors, currentDrones->x, currentDrones->y); // update for the next iteration
@@ -166,7 +165,7 @@ void perform_balancing_phase(Drones drones[], struct Neighbors DroneNeighbors[],
     }
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].state == Free) // drone is free
+        if (drones[i].state == Free)
         {
             move_free_until_border(&DroneNeighbors[i], drones, &drones[i], numdrones);
         }
