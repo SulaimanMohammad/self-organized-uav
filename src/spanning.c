@@ -623,7 +623,7 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
      */
     for (int i = 0; i < numdrones; i++)
     {
-        if ((drones[i].state == 3 || drones[i].state == 4) && drones[i].targetfound)
+        if ((drones[i].state == Irremovable || drones[i].state == Irremovable_border) && drones[i].targetfound)
         {
             validDrones[validCount++] = drones[i];
             drones[i].id_tag_to_border = -1;
@@ -731,7 +731,7 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
 
     for (int i = 0; i < numdrones; i++)
     {
-        if ((drones[i].state == 3 || drones[i].state == 4) && drones[i].targetfound)
+        if ((drones[i].state == Irremovable || drones[i].state == Irremovable_border) && drones[i].targetfound)
         {
             validDrones[validCount++] = drones[i];
             drones[i].id_tag_to_border = -1;
