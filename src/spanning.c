@@ -315,11 +315,8 @@ float check_previous_border_distnace(Drones drones[], Drones *currentDrones, int
         if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
             if (((drones[i].previous_state == Border || drones[i].previous_state == Irremovable_border)) && drones[i].id_tag_to_sink != currentDrones->id_tag_to_sink)
-
             {
-                drone_distance = sqrt((drones[i].x * drones[i].x) + (drones[i].y * drones[i].y));
-
-                return drone_distance;
+                return drones[i].drone_distance;
             }
         }
     }
@@ -357,6 +354,7 @@ int check_dir_close_to_sink(Drones drones[], Drones *currentDrones, int numdrone
 
                 if ((drones[i].state == state && (drones[i].previous_state != Border && drones[i].previous_state != Irremovable_border)))
                 {
+                    // Dont use distance to compare because sometimes 2 drones have same distance from sink but we need the distance between 2 points not with sink
                     float difference = sqrt(pow(drones[i].x - drones[currentDrones->closest_target].x, 2) + pow(drones[i].y - drones[currentDrones->closest_target].y, 2));
 
                     if (difference < min_difference)
@@ -431,7 +429,7 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     // No irreomvabe from another path found , then try to find the closest free drone around
     if (dir == 0)
     {
-        int desired_dir = check_dir_close_to_sink(drones, currentDrones, numdrones, 2);
+        int desired_dir = check_dir_close_to_sink(drones, currentDrones, numdrones, Free);
         if (desired_dir != -1)
             dir = desired_dir;
     }
@@ -452,7 +450,15 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
         }
     }
 
-    // no drones found , not previous border and not irremovable not free , return and wait to next itration to connect wwith the sink
+    // No Irremovable, free or previous border then try to find border close to conect with which lead to another drone to sink
+    if (dir == 0)
+    {
+        int desired_dir = check_dir_close_to_sink(drones, currentDrones, numdrones, Border);
+        if (desired_dir != -1)
+            dir = desired_dir;
+    }
+
+    // No drones found, not previous border and not irremovable not free not border, return and wait to next itration to connect wwith the sink
     if (dir == 0)
     {
         return false;
