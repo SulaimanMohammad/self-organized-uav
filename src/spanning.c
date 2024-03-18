@@ -305,22 +305,25 @@ int check_close_to_sink(Drones drones[], Drones *currentDrones, int numdrones, i
     return closetosink_drone;
 }
 
-int check_previous_border(Drones drones[], Drones *currentDrones, int numdrones, int dir)
+float check_previous_border_distnace(Drones drones[], Drones *currentDrones, int numdrones, int dir)
 {
     int previous_border = 0;
+    float drone_distance;
     for (int i = 0; i < numdrones; i++)
     {
         // find what drone it is
         if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
         {
-            if ((drones[i].previous_state == Border || drones[i].previous_state == Irremovable_border)) // it was a border before
+            if (((drones[i].previous_state == Border || drones[i].previous_state == Irremovable_border)) && drones[i].id_tag_to_sink != currentDrones->id_tag_to_sink)
+
             {
-                previous_border = 1;
-                break;
+                drone_distance = sqrt((drones[i].x * drones[i].x) + (drones[i].y * drones[i].y));
+
+                return drone_distance;
             }
         }
     }
-    return previous_border;
+    return -1; // if nothing found
 }
 
 void build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Drones drones[], int numdrones, int sender_id)
