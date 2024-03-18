@@ -537,8 +537,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
 
     for (int k = 0; k < irrmvbleSize; k++)
     {
-        if (irrmvble_id[k] != sender_id && neighbors[currentDrones->id].distances[0] <= neighbors[irrmvble_id[k]].distances[0] &&
-            drones[irrmvble_id[k]].id_tag_to_border != currentDrones->id_tag_to_border && drones[irrmvble_id[k]].id_tag_to_border != -1)
+        if (irrmvble_id[k] != sender_id && neighbors[currentDrones->id].distances[0] <= neighbors[irrmvble_id[k]].distances[0])
         {
             sscanf(irrmvble_dir[k], "s%d", &dir);
             break;
@@ -590,7 +589,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
                 drones[i].id_tag_to_border = currentDrones->id_tag_to_border;
                 return build_path_to_border(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
-            else if (drones[i].state == Irremovable_border || ((drones[i].state == Irremovable || drones[i].state == Irremovable_border) && drones[i].id_tag_to_border != currentDrones->id_tag_to_border))
+            else if (drones[i].state == Irremovable_border || ((drones[i].state == Irremovable || drones[i].state == Irremovable_border) && drones[i].id_tag_to_border != currentDrones->id_tag_to_border && drones[i].id_tag_to_border != -1))
             {
                 return drones[i].id; // arrived to drone with irrmovable state
             }
@@ -690,7 +689,6 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
         Build path to the border performed by all the target except the sink that is in targets_order , because the sink will be at the dirst index
         and it will execute build path to border, which should be done only if no target id foud ( so no other path was built)
         */
-        drones[targets_order[i]].id_tag_to_border = drones[targets_order[i]].id;
         if (drones[targets_order[i]].id != 0 && drones[targets_order[i]].drone_distance != 0) // not sink
         {
             drones[targets_order[i]].id_tag_to_border = drones[targets_order[i]].id;
@@ -702,7 +700,6 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
             }
         }
     }
-
     /*
     Since the sink was included in the array, then if no other irremovable
     drone arround belong to another path ( no target found) from previous building path to sink then it will try to build its own path to border
