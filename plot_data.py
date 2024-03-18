@@ -13,7 +13,6 @@ if len(sys.argv) < 3:
     print("Usage: python plot_data.py <n> <a>")
     sys.exit(1)
 
-# Assuming the first argument is the script name, the second is 'n', and the third is 'a'
 n = int(sys.argv[1])
 a = float(sys.argv[2])  # Convert 'a' to float, assuming 'a' could be a decimal
 R_c= int(a / (1.732) * 10000.0) / 10000.0
@@ -102,32 +101,32 @@ def update(frame):
     ids, x, y, state, is_target = zip(*points)
     
     for point in state_2_points_targets:
-        ax.scatter(point[0], point[1], facecolor=(1.0, 0.0, 0.0, 0.5), marker='x', s=200)
+        ax.scatter(point[0], point[1], facecolor=(1.0, 0.0, 0.0, 0.5), marker='x', s=(a-1)*10)
 
     state_2_points_irrmovable = [(x[i], y[i]) for i in range(len(points)) if state[i] == 3]
     for point in state_2_points_irrmovable:
-        ax.scatter(point[0], point[1],facecolor=(1, 0.0, 0.0, 0.5), marker='o', s=400)
+        ax.scatter(point[0], point[1],facecolor=(1, 0.0, 0.0, 0.5), marker='o', s=(a-1)*20)
         draw_hexagon(point)
 
     state_2_points_border = [(x[i], y[i]) for i in range(len(points)) if state[i] == 2]
     for point in state_2_points_border:
-        ax.scatter(point[0], point[1], facecolor=(0.5, 0.5, 0.5, 0.7), marker='o', s=600)
+        ax.scatter(point[0], point[1], facecolor=(0.5, 0.5, 0.5, 0.7), marker='o', s=(a-1)*30)
         draw_hexagon(point)
     # drone is border and find tagrzt too 
     state_2_points_both = [(x[i], y[i]) for i in range(len(points)) if state[i] == 4]
     for point in state_2_points_both:
-        ax.scatter(point[0], point[1], facecolor=(0.5, 0.5, 0.5, 0.7), marker='o', s=600)
-        ax.scatter(point[0], point[1], facecolor=(1, 0.0, 0.0, 0.5), marker='o', s=400)
+        ax.scatter(point[0], point[1], facecolor=(0.5, 0.5, 0.5, 0.7), marker='o', s=(a-1)*30)
+        ax.scatter(point[0], point[1], facecolor=(1, 0.0, 0.0, 0.5), marker='o', s=(a-1)*20)
         draw_hexagon(point)
 
     free_points = [(x[i], y[i]) for i in range(len(points)) if state[i] ==0 or state[i] ==1]
     for point,i in zip(free_points, range(0,len(colors))) :
-        ax.scatter(point[0], point[1], color=colors[i], marker='o', s=300)
+        ax.scatter(point[0], point[1], color=colors[i], marker='o', s=(a+9)*10)
         draw_hexagon(point)
 
     target_points = [(x[i], y[i]) for i in range(len(points)) if is_target[i] == 1]
     for point in target_points:
-        ax.scatter(point[0], point[1], color='black', marker='o', s=300)
+        ax.scatter(point[0], point[1], facecolor=(0, 0, 0, 0.4), marker='8', s=(a-1)*20)
         draw_hexagon(point)
         
     if frame !=0: #  for everything other than the targets
