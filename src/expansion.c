@@ -47,6 +47,7 @@ void initializeDrones(Drones drones[], int numdrones)
         drones[i].id = i;
         drones[i].x = 0.0;
         drones[i].y = 0.0;
+        drones[i].drone_distance = 0.0;
         drones[i].state = Free;
         drones[i].targetfound = 0;
         drones[i].previous_state = Free;
@@ -494,6 +495,7 @@ void moveDrones(Drones *Drones, enum Direction dir)
     // Move the given Drones a fixed distance in one of the 6 directions
     Drones->x = round_to_decimals_float(Drones->x + DIR_VECTORS[dir][0], 2);
     Drones->y = round_to_decimals_float(Drones->y + DIR_VECTORS[dir][1], 2);
+    Drones->drone_distance = sqrt((Drones->x * Drones->x) + (Drones->y * Drones->y));
 }
 
 void set_num_drones_at_neighbors(Drones drones[], struct Neighbors *neighbors, Drones *currentDrones, int numdrones)

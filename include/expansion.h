@@ -40,12 +40,10 @@ typedef struct Drones
     float y;
     int state;
     int targetfound;
-    // alone=0 free=1 border=2 irrmovable=3 // irrovable and border= 4
     int previous_state;
-    // when the border s formed
-    // if a drone become irrmovable then the dominated direction  will not change
     int allowed_neighborsSize;
-    int *allowed_to_goto; // Now an int array;
+    int *allowed_to_goto;
+    float drone_distance;
 
 } Drones;
 
