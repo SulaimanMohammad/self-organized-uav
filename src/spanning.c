@@ -293,7 +293,7 @@ int check_close_to_sink(Drones drones[], Drones *currentDrones, int numdrones, i
     for (int i = 0; i < numdrones; i++)
     {
         // find what drone it is
-        if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]))
+        if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[dir][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[dir][1]) && drones[i].id_tag_to_sink != currentDrones->id_tag_to_sink)
         {
             if (abs(drones[i].x) < abs(currentDrones->x) && abs(drones[i].y) < abs(currentDrones->y))
             {
