@@ -373,9 +373,7 @@ int check_dir_close_to_sink(Drones drones[], Drones *currentDrones, int numdrone
 
 bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Drones drones[], int numdrones, int sender_id)
 {
-
     set_num_drones_at_neighbors(drones, &neighbors[currentDrones->id], currentDrones, numdrones);
-
     if ((currentDrones->x == 0 && currentDrones->y == 0) || (currentDrones->connect_sink)) // stop the recursion when arrive to sink or another path
     {
         return true;
@@ -429,17 +427,27 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
             dir = desired_dir;
     }
 
+    // Find a previous border that is close to the target want to connect to
     if (dir == 0)
     {
+        float min_distance_difference = FLT_MAX; // Variable to track the minimum difference
+
         for (int j = 1; j < neighbors[currentDrones->id].size; j++) // neighbors[currentDrones->id].size=7
         {
             if (strcmp(neighbors[currentDrones->id].Status[j], "o") == 0 &&
                 strcmp(neighbors[currentDrones->id].keys[j], sender_dir) != 0)
             {
-                if (check_previous_border(drones, currentDrones, numdrones, j)) //||has_irrmovable_drone_around(neighbors, currentDrones, drones, numdrones, sender_id)) // you need to passs J
+
+                float neig_border_distance = check_previous_border_distnace(drones, currentDrones, numdrones, j);
+                if (neig_border_distance != -1)
                 {
-                    dir = j;
-                    break;
+                    int neig_drone_id = find_drone_id_around(drones, currentDrones->id, numdrones, j);
+                    float difference = sqrt(pow(drones[neig_drone_id].x - drones[currentDrones->closest_target].x, 2) + pow(drones[neig_drone_id].y - drones[currentDrones->closest_target].y, 2));
+                    if (difference < min_distance_difference)
+                    {
+                        min_distance_difference = difference;
+                        dir = j;
+                    }
                 }
             }
         }
@@ -467,6 +475,8 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
             {
                 drones[i].state = Irremovable_border;
                 currentDrones->previous_state = Irremovable;
+                drones[i].id_tag_to_sink = currentDrones->id_tag_to_sink;
+                drones[i].closest_target = currentDrones->closest_target;
                 // you should go to the sink
                 return build_path_to_sink(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
@@ -487,10 +497,10 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
             }
             else
             {
-                // printf("    drone %d , change to be 3 with state %d and previous %d\n", drones[i].id, drones[i].state, drones[i].previous_state);
                 drones[i].state = Irremovable;
-                currentDrones->previous_state = Irremovable; // this is to avoid considrringg what already done as a new target
-                                                             // see what happen without it // and no need to try to conider the road each iteration
+                drones[i].previous_state = Irremovable;
+                drones[i].id_tag_to_sink = currentDrones->id_tag_to_sink;
+                drones[i].closest_target = currentDrones->closest_target;
                 return build_path_to_sink(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
         }
