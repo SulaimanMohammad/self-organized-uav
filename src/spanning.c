@@ -1,5 +1,6 @@
 #include "expansion.h"
 #include <stdbool.h>
+#include <float.h>
 
 #define PI 3.14159265358979323846
 #define SQRT_3_OVER_2 0.86602540378 // sqrt(3) / 2
@@ -124,6 +125,25 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targ
                 currentDrones->previous_state = previous_state;
         }
     }
+}
+
+// used to build ordered array so the closest targest to the sink will start building patht to the sink
+int compareDrones(const void *d1, const void *d2)
+{
+    Drones *droneA = (Drones *)d1;
+    Drones *droneB = (Drones *)d2;
+    if (droneA->drone_distance < droneB->drone_distance)
+        return -1;
+    if (droneA->drone_distance > droneB->drone_distance)
+        return 1;
+    if (droneA->drone_distance == droneB->drone_distance)
+    {
+        if (droneA->id < droneB->id)
+            return -1;
+        else
+            return 1;
+    }
+    return 0;
 }
 
 void findIrremovableDroneAround(Drones drones[], Drones *currentDrone, char result[MAX_SIZE][MAX_SIZE], int *irrmvble_id, int *resultSize, int numdrones)
@@ -399,7 +419,7 @@ void build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     }
 }
 
-void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDrones, Drones drones[], int numdrones, int sender_id)
+bool build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDrones, Drones drones[], int numdrones, int sender_id)
 {
 
     set_num_drones_at_neighbors(drones, &neighbors[currentDrones->id], currentDrones, numdrones);
@@ -537,7 +557,7 @@ void build_path_to_sink_further(struct Neighbors neighbors[], Drones *currentDro
 here you should connect to the farest and close to the border or irrmovable
 */
 // this should be doen until arriving to a drone with a state border
-void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Drones drones[], int numdrones, int sender_id)
+int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Drones drones[], int numdrones, int sender_id)
 {
     // printf("curre_drone %d \n", currentDrones->id);
     set_num_drones_at_neighbors(drones, &neighbors[currentDrones->id], currentDrones, numdrones);
@@ -628,46 +648,182 @@ void build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, D
     }
 }
 
+/*
+- Find the drones that found the targets and  need to build path to the sink and to the border
+- Also add the drone that belongs to sink connected to the border in case no target found in previous spanning so it can be connected to it
+- Arrange the drones in targets_order array in ascending order so the ones closest to sink start building the path
+*/
+
 void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
 {
+    Drones validDrones[numdrones];
+    int validCount = 0;
+
+    /*
+    In the first spanning each drone can connect to the closest target if it is already built a path  or to the sink itself if it is close to it
+    Actually in this way the closest to the sink will connect to it and the others targets willl try to connect to the on very close to sink
+    */
+    /*
+    Note that drones[i].id_tag_to_border = -1; because this process is continous not like building path to sink
+    building path to border should be updated after each spannning to connect to the new border
+     */
     for (int i = 0; i < numdrones; i++)
     {
-        if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
+        if ((drones[i].state == 3 || drones[i].state == 4) && drones[i].targetfound)
         {
-            set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
-            build_path_to_sink(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
+            validDrones[validCount++] = drones[i];
+            drones[i].id_tag_to_border = -1;
+        }
+        if (drones[i].x == 0 && drones[i].y == 0)
+        {
+            validDrones[validCount++] = drones[i]; // add the sink so there is possibility to connect to it directly
         }
     }
-    for (int i = 0; i < numdrones; i++)
+
+    // Sort the valid drones by distance.
+    qsort(validDrones, validCount, sizeof(Drones), compareDrones);
+
+    // Allocate memory for targets_order based on valid drone count.
+    int *targets_order = (int *)malloc(validCount * sizeof(int));
+    for (int i = 0; i < validCount; i++)
     {
-        if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
+        targets_order[i] = validDrones[i].id;
+    }
+
+    // The closest to sink starts and so on until all build path
+    for (int i = 0; i < validCount; i++)
+    {
+        float mind_difference = FLT_MAX;
+        int target_close_id = 0;
+
+        for (int j = 0; j < validCount; j++)
         {
-            set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
-            build_path_to_border(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
+            /* drones[targets_order[j]].drone_distance < drones[targets_order[i]].drone_distance this condition is necessary to
+            garentee that the drone will connect to it already built it is path
+            since the one with smallest distanc will start first*/
+            if (targets_order[j] != targets_order[i] && drones[targets_order[j]].drone_distance < drones[targets_order[i]].drone_distance)
+            {
+                float difference = sqrt(pow(drones[targets_order[j]].x - drones[targets_order[i]].x, 2) + pow(drones[targets_order[j]].y - drones[targets_order[i]].y, 2));
+                if (difference <= mind_difference)
+                {
+                    mind_difference = difference;
+                    target_close_id = drones[targets_order[j]].id;
+                }
+            }
+        }
+
+        drones[targets_order[i]].closest_target = target_close_id;
+        drones[targets_order[i]].id_tag_to_sink = drones[targets_order[i]].id; // set the tag of the path equal to the id of target that try to built it
+        bool connected = false;
+        // start the recursive function to build the path and each drone on that path will be taged ith the id of the target that constructing the path
+        set_num_drones_at_neighbors(drones, &DroneNeighbors[targets_order[i]], &drones[targets_order[i]], numdrones);
+        connected = build_path_to_sink_further(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
+        // When arriving to the sink or to another irremovable drone that belongs to another path that is connected to the sink
+        // stop and mark all the drones that are taged with the same id of target with cconnected to recognize that they are connected to sink
+        if (connected)
+        {
+            for (int j = 0; j < numdrones; j++)
+            {
+                if (drones[j].id_tag_to_sink == drones[targets_order[i]].id_tag_to_sink)
+                {
+                    drones[j].connect_sink = true;
+                }
+            }
+        }
+
+        /*
+        Build path to the border and since the sink was included in the array then if no other irremovable
+        drone arround belong to another path ( no target found) it will try to build its own path to border
+        */
+        drones[targets_order[i]].id_tag_to_border = drones[targets_order[i]].id;
+        set_num_drones_at_neighbors(drones, &DroneNeighbors[targets_order[i]], &drones[targets_order[i]], numdrones);
+        int id_irr_border = build_path_to_border(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
+        if (id_irr_border > 0)
+        {
+            drones[i].id_border_connection = id_irr_border;
         }
     }
+
+    free(targets_order);
+
     saveDrones(drones, numdrones, fp);
 }
 
 void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int numdrones, FILE *fp)
 {
-    for (int i = 0; i < numdrones; i++)
-    {
-        if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
-        {
-            set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
-            build_path_to_sink_further(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
-        }
-    }
+    Drones validDrones[numdrones];
+    int validCount = 0;
 
     for (int i = 0; i < numdrones; i++)
     {
-
-        if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
+        if ((drones[i].state == 3 || drones[i].state == 4) && drones[i].targetfound)
         {
-            set_num_drones_at_neighbors(drones, &DroneNeighbors[i], &drones[i], numdrones);
-            build_path_to_border(DroneNeighbors, &drones[i], drones, numdrones, drones[i].id);
+            validDrones[validCount++] = drones[i];
+            drones[i].id_tag_to_border = -1;
+        }
+        if (drones[i].x == 0 && drones[i].y == 0)
+        {
+            validDrones[validCount++] = drones[drones[i].id_border_connection]; // add the border of the sink if it is there
         }
     }
+
+    qsort(validDrones, validCount, sizeof(Drones), compareDrones);
+
+    int *targets_order = (int *)malloc(validCount * sizeof(int));
+    for (int i = 0; i < validCount; i++)
+    {
+        targets_order[i] = validDrones[i].id;
+    }
+
+    for (int i = 0; i < validCount; i++)
+    {
+        float mind_difference = FLT_MAX;
+        int target_close_is = 0;
+
+        // If target drone is not connected to the sink then try to connect it
+        if (!drones[targets_order[i]].connect_sink)
+        {
+            for (int j = 0; j < validCount; j++)
+            {
+                if (targets_order[j] != targets_order[i] && drones[targets_order[j]].drone_distance < drones[targets_order[i]].drone_distance)
+                {
+                    float difference = sqrt(pow(drones[targets_order[j]].x - drones[targets_order[i]].x, 2) + pow(drones[targets_order[j]].y - drones[targets_order[i]].y, 2));
+                    if (difference < mind_difference)
+                    {
+                        mind_difference = difference;
+                        target_close_is = drones[targets_order[j]].id;
+                    }
+                }
+            }
+        }
+        drones[targets_order[i]].closest_target = target_close_is;
+        drones[targets_order[i]].id_tag_to_sink = drones[targets_order[i]].id;
+        bool connected = false;
+
+        set_num_drones_at_neighbors(drones, &DroneNeighbors[targets_order[i]], &drones[targets_order[i]], numdrones);
+        connected = build_path_to_sink_further(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
+        if (connected)
+        {
+            for (int j = 0; j < numdrones; j++)
+            {
+                if (drones[j].id_tag_to_sink == drones[targets_order[i]].id_tag_to_sink)
+                {
+                    drones[j].connect_sink = true;
+                }
+            }
+        }
+        /*
+        Build path to the border from the most close to the sink.
+        and since the drone that is connect sink to border from the last phase was included in the array then if no other irremovable
+        drone arround belong to another path it will try to build its own path to new border
+        */
+        drones[targets_order[i]].id_tag_to_border = drones[targets_order[i]].id;
+        int id_irr_border = build_path_to_border(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
+        if (id_irr_border > 0)
+        {
+            drones[targets_order[i]].id_border_connection = id_irr_border;
+        }
+    }
+    free(targets_order);
     saveDrones(drones, numdrones, fp);
 }

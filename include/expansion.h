@@ -45,6 +45,12 @@ typedef struct Drones
     int *allowed_to_goto;
     float drone_distance;
 
+    int id_tag_to_border;
+    int id_border_connection;
+    int id_tag_to_sink;
+    int closest_target;
+    bool connect_sink;
+
 } Drones;
 
 struct Neighbors

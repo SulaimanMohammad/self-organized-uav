@@ -58,6 +58,12 @@ void initializeDrones(Drones drones[], int numdrones)
             drones[i].allowed_to_goto[j] = j;
         }
         drones[i].allowed_neighborsSize = 7;
+
+        drones[i].id_tag_to_border = -1;
+        drones[i].id_border_connection = -1;
+        drones[i].id_tag_to_sink = -1;
+        drones[i].closest_target = -1;
+        drones[i].connect_sink = false;
     }
 }
 
