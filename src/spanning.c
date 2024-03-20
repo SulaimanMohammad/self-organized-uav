@@ -430,31 +430,13 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     {
         for (int k = 0; k < irrmvbleSize; k++)
         {
-            if (irrmvble_id[k] != sender_id && drones[irrmvble_id[k]].id_tag_to_sink != currentDrones->id_tag_to_sink)
+            if (irrmvble_id[k] != sender_id && drones[irrmvble_id[k]].id_tag_to_sink != currentDrones->id_tag_to_sink) // then after it will examined if it is connected to sink or not
             {
                 min_irrmovable = neighbors[irrmvble_id[k]].distances[0];
                 sscanf(irrmvble_dir[k], "s%d", &dir);
                 break;
             }
         }
-    }
-    for (int k = 0; k < irrmvbleSize; k++)
-    {
-        if (irrmvble_id[k] != sender_id &&
-            neighbors[currentDrones->id].distances[0] >= neighbors[irrmvble_id[k]].distances[0] &&
-            neighbors[irrmvble_id[k]].distances[0] <= min_irrmovable) // getting closer to sink
-        {
-            min_irrmovable = neighbors[irrmvble_id[k]].distances[0];
-            sscanf(irrmvble_dir[k], "s%d", &dir);
-        }
-    }
-
-    // No irreomvabe from another path found , then try to find the closest free drone around
-    if (dir == 0)
-    {
-        int desired_dir = check_dir_close_to_goal(drones, currentDrones, numdrones, Free);
-        if (desired_dir != -1)
-            dir = desired_dir;
     }
 
     // Find a previous border that is close to the target want to connect to
@@ -483,6 +465,13 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
         }
     }
 
+    // No irreomvabe from another path found , then try to find the closest free drone around
+    if (dir == 0)
+    {
+        int desired_dir = check_dir_close_to_goal(drones, currentDrones, numdrones, Free);
+        if (desired_dir != -1)
+            dir = desired_dir;
+    }
     // No Irremovable, free or previous border then try to find border close to conect with which lead to another drone to sink
     if (dir == 0)
     {
@@ -510,7 +499,7 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
                 // you should go to the sink
                 return build_path_to_sink(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
-            else if ((drones[i].state == Irremovable || drones[i].state == Irremovable_border && (drones[i].previous_state == Border || drones[i].previous_state == Irremovable_border || drones[i].previous_state == Irremovable_border)))
+            else if (drones[i].state == Irremovable || drones[i].state == Irremovable_border)
             {
                 // Arrived to Irremovable should check if it belongds to connected to sink path
                 // if it is not connected then consider it part of the current target and keep searching to connect with the sink
