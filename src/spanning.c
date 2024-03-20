@@ -337,7 +337,7 @@ int find_drone_id_around(Drones drones[], int current_drone_id, int numdrones, i
     return -1;
 }
 
-int check_dir_close_to_sink(Drones drones[], Drones *currentDrones, int numdrones, int state)
+int check_dir_close_to_goal(Drones drones[], Drones *currentDrones, int numdrones, int state)
 {
     float min_distance_to_border = FLT_MAX;
     int desired_dir = -1;
@@ -398,8 +398,7 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     {
         for (int k = 0; k < irrmvbleSize; k++)
         {
-            if (irrmvble_id[k] != sender_id && neighbors[currentDrones->id].distances[0] >= neighbors[irrmvble_id[k]].distances[0] &&
-                drones[irrmvble_id[k]].id_tag_to_sink != currentDrones->id_tag_to_sink)
+            if (irrmvble_id[k] != sender_id && drones[irrmvble_id[k]].id_tag_to_sink != currentDrones->id_tag_to_sink)
             {
                 min_irrmovable = neighbors[irrmvble_id[k]].distances[0];
                 sscanf(irrmvble_dir[k], "s%d", &dir);
@@ -411,8 +410,7 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     {
         if (irrmvble_id[k] != sender_id &&
             neighbors[currentDrones->id].distances[0] >= neighbors[irrmvble_id[k]].distances[0] &&
-            neighbors[irrmvble_id[k]].distances[0] <= min_irrmovable && check_close_to_sink(drones, currentDrones, numdrones, k) &&
-            drones[irrmvble_id[k]].id_tag_to_sink != currentDrones->id_tag_to_sink) // getting closer to sink
+            neighbors[irrmvble_id[k]].distances[0] <= min_irrmovable) // getting closer to sink
         {
             min_irrmovable = neighbors[irrmvble_id[k]].distances[0];
             sscanf(irrmvble_dir[k], "s%d", &dir);
@@ -422,7 +420,7 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     // No irreomvabe from another path found , then try to find the closest free drone around
     if (dir == 0)
     {
-        int desired_dir = check_dir_close_to_sink(drones, currentDrones, numdrones, Free);
+        int desired_dir = check_dir_close_to_goal(drones, currentDrones, numdrones, Free);
         if (desired_dir != -1)
             dir = desired_dir;
     }
@@ -456,7 +454,7 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     // No Irremovable, free or previous border then try to find border close to conect with which lead to another drone to sink
     if (dir == 0)
     {
-        int desired_dir = check_dir_close_to_sink(drones, currentDrones, numdrones, Border);
+        int desired_dir = check_dir_close_to_goal(drones, currentDrones, numdrones, Border);
         if (desired_dir != -1)
             dir = desired_dir;
     }
