@@ -575,13 +575,16 @@ void find_border_update_drone_state(Drones drones[], struct Neighbors *neighbors
     // the drone at the sink is always irrmovable
     if (currentDrones->x == 0.0 && currentDrones->y == 0.0)
     {
-        currentDrones->state = Irremovable;
+        if (count_drons < 6) // there is a gap
+            currentDrones->state = Irremovable_border;
+        else
+            currentDrones->state = Irremovable; // otherwise it should be irremovable so sink doesnt move
     }
     else if (count_drons == 6)
     {
         currentDrones->state = Free; // free state
     }
-    else if (count_drons < 6 && currentDrones->state == 0)
+    else if (count_drons < 6 && currentDrones->state == Alone)
     {
         currentDrones->state = Border;
     }
@@ -617,16 +620,7 @@ void find_border_further_update_drone_state(Drones drones[], struct Neighbors *n
         }
     }
 
-    if (currentDrones->x == 0.0 && currentDrones->y == 0.0)
-    {
-        currentDrones->state = Irremovable;
-        for (int j = 0; j < 7; j++)
-        {
-            currentDrones->allowed_to_goto[j] = j;
-        }
-        currentDrones->allowed_neighborsSize = 7;
-    }
-    else if (count_drons_border == currentDrones->allowed_neighborsSize && (currentDrones->state == Border || currentDrones->state == Irremovable_border))
+    if (count_drons_border == currentDrones->allowed_neighborsSize && (currentDrones->state == Border || currentDrones->state == Irremovable_border))
     {
 
         if (currentDrones->state == Border)
