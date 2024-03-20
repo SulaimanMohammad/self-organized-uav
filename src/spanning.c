@@ -556,7 +556,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
 
     for (int k = 0; k < irrmvbleSize; k++)
     {
-        if (irrmvble_id[k] != sender_id && neighbors[currentDrones->id].distances[0] <= neighbors[irrmvble_id[k]].distances[0])
+        if (irrmvble_id[k] != sender_id && drones[irrmvble_id[k]].state == 4)
         {
             sscanf(irrmvble_dir[k], "s%d", &dir);
             break;
