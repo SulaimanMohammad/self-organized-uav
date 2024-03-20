@@ -566,7 +566,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
     // No irremovable found try to connect to any close drone twards the border
     if (dir == 0)
     {
-        int max_dist = 0;
+        float max_dist = 0;
         for (int j = 1; j < neighbors[currentDrones->id].size; j++)
         {
 
@@ -576,26 +576,34 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
             {
 
                 max_dist = neighbors[currentDrones->id].distances[j];
+                dir = j; // should be assigned beause it is possible to dont find others
                 break;
             }
         }
-
+        // It is possible to have many drones has the same distance so it can be chosen randomly
         for (int j = 1; j < neighbors[currentDrones->id].size; j++)
         {
             if (strcmp(neighbors[currentDrones->id].Status[j], "o") == 0 &&
-                strcmp(neighbors[currentDrones->id].keys[j], sender_dir) != 0 &&
-                max_dist <= neighbors[currentDrones->id].distances[j])
+                strcmp(neighbors[currentDrones->id].keys[j], sender_dir) != 0)
             {
-
-                max_dist = neighbors[currentDrones->id].distances[j];
-                dir = j;
+                if (float_compare(max_dist, neighbors[currentDrones->id].distances[j]))
+                {
+                    if (rand() % 2) // This results in 0 or 1 randomly
+                        dir = j;    // No need to update max_dist since it's equal
+                    // If 0, keep dir as is
+                }
+                else if (max_dist < neighbors[currentDrones->id].distances[j])
+                {
+                    max_dist = neighbors[currentDrones->id].distances[j];
+                    dir = j;
+                }
             }
         }
     }
     // nothing found return -1
     if (dir == 0)
     {
-        return -1;
+        return currentDrones->id;
     }
     //  same in real life after reciving a message should check the state of the drone if it is not border it should forward the message
     for (int i = 0; i < numdrones; i++)
@@ -705,7 +713,7 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
             drones[targets_order[i]].id_tag_to_border = drones[targets_order[i]].id;
             set_num_drones_at_neighbors(drones, &DroneNeighbors[targets_order[i]], &drones[targets_order[i]], numdrones);
             int id_irr_border = build_path_to_border(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
-            if (id_irr_border > 0)
+            if (id_irr_border >= 0)
             {
                 drones[i].id_border_connection = id_irr_border;
             }
@@ -736,7 +744,7 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
                 drones[targets_order[i]].id_tag_to_border = drones[targets_order[i]].id;
                 set_num_drones_at_neighbors(drones, &DroneNeighbors[targets_order[i]], &drones[targets_order[i]], numdrones);
                 int id_irr_border = build_path_to_border(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
-                if (id_irr_border > 0)
+                if (id_irr_border >= 0)
                 {
                     drones[targets_order[i]].id_border_connection = id_irr_border;
                     // tag all those drones as connected to the sink so they are able to connect with them
@@ -824,7 +832,7 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
         */
         drones[targets_order[i]].id_tag_to_border = drones[targets_order[i]].id;
         int id_irr_border = build_path_to_border(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
-        if (id_irr_border > 0)
+        if (id_irr_border >= 0)
         {
             drones[targets_order[i]].id_border_connection = id_irr_border;
         }
