@@ -101,7 +101,23 @@ bool isPointInsideHexagon(float pointX, float pointY, float centerX, float cente
     return true;
 }
 
-void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targets, int targets_size, int numdrones)
+// If many drones found the same target then keep only th eone with min id
+void check_another_neighbor_detect_target(Drones drones[], struct Neighbors neighbors[], Drones *currentDrones, int numdrones)
+{
+    for (int j = 1; j < neighbors[currentDrones->id].size; j++)
+    {
+        for (int i = 0; i < numdrones; i++)
+        {
+            if (float_compare(drones[i].x, currentDrones->x + DIR_VECTORS[j][0]) && float_compare(drones[i].y, currentDrones->y + DIR_VECTORS[j][1]))
+            {
+                if (drones[i].targetfound && drones[i].id > currentDrones->id)
+                    drones[i].targetfound = false;
+            }
+        }
+    }
+}
+
+void set_state_target_check(Drones drones[], Drones *currentDrones, struct Neighbors neighbors[], Target *targets, int targets_size, int numdrones)
 {
     // so when drone was border then will move many steps then border state will not be saved
     int previous_state = 0;
@@ -111,18 +127,34 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targ
         {
             targets[i].found = true;
             currentDrones->targetfound = 1;
-            previous_state = currentDrones->state;
+        }
+    }
+    // Edit and keep only one drone in the neighbors that will stay with target
+    /*
+    In case you need all drones stay with the target , Remove check_another_neighbor_detect_target
+    */
+    for (int i = 0; i < numdrones; i++)
+    {
+        if (drones[i].targetfound)
+            check_another_neighbor_detect_target(drones, neighbors, &drones[i], numdrones);
+    }
+    // Change the state of the drone that stays
+    for (int i = 0; i < numdrones; i++)
+    {
+        if (drones[i].targetfound)
+        {
+            int previous_state = drones[i].state;
 
-            if (currentDrones->state == Alone || currentDrones->state == Free)
+            if (drones[i].state == 0 || drones[i].state == 1) // drone is in free or alone state
             {
-                currentDrones->state = Irremovable;
+                drones[i].state = 3; // drone is irrmovable
             }
-            if (currentDrones->state == Border)
+            if (drones[i].state == 2) // drone is in border state
             {
-                currentDrones->state = Irremovable_border;
+                drones[i].state = 4; // drone is irrmovable and border
             }
-            if (currentDrones->state != previous_state)
-                currentDrones->previous_state = previous_state;
+            if (drones[i].state != previous_state)
+                drones[i].previous_state = previous_state;
         }
     }
 }

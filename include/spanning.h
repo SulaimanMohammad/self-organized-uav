@@ -4,7 +4,7 @@
 int isDuplicate(Target *objects, int size, float x, float y);
 void generate_targets(Target *targets, int targets_size, float (*predefinedTargets)[2]);
 void save_targes(Target *targets, int targets_size, FILE *fp);
-void set_state_target_check(Drones drones[], Drones *currentDrones, Target *targets, int targets_size, int numdrones);
+void set_state_target_check(Drones drones[], Drones *currentDrones, struct Neighbors neighbors[], Target *targets, int targets_size, int numdrones);
 void findIrremovableDroneAround(Drones drones[], Drones *currentDrone, char result[MAX_SIZE][MAX_SIZE], int *irrmvble_id, int *resultSize, int numdrones);
 void find_num_IrremovableDroneAround(Drones drones[], Drones *currentDrone, int *resultSize, int numdrones, int currentDrones_id, int sender_id);
 int has_irrmovable_drone_around_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Drones drones[], int numdrones, int sender_id);

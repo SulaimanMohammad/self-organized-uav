@@ -732,7 +732,7 @@ void form_border_and_update_states(Drones *drones, struct Neighbors DroneNeighbo
     for (int i = 0; i < numdrones; i++)
     {
         find_border_update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
-        set_state_target_check(drones, &drones[i], targets, targets_size, numdrones);
+        set_state_target_check(drones, &drones[i], DroneNeighbors, targets, targets_size, numdrones);
     }
     saveDrones(drones, numdrones, fp);
 }
@@ -745,7 +745,7 @@ void form_further_border_and_update_states(Drones *drones, struct Neighbors Dron
         {
             find_border_further_update_drone_state(drones, &DroneNeighbors[i], &drones[i], numdrones);
         }
-        set_state_target_check(drones, &drones[i], targets, targets_size, numdrones);
+        set_state_target_check(drones, &drones[i], DroneNeighbors, targets, targets_size, numdrones);
     }
     saveDrones(drones, numdrones, fp);
 }
