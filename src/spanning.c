@@ -617,7 +617,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
                 drones[i].id_tag_to_sink = currentDrones->id_tag_to_sink;
                 return build_path_to_border(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
-            else if (drones[i].state == Irremovable_border || ((drones[i].state == Irremovable || drones[i].state == Irremovable_border) && drones[i].id_tag_to_border != currentDrones->id_tag_to_border && drones[i].id_tag_to_border != -1))
+            else if (drones[i].state == 4)
             {
                 return drones[i].id; // arrived to drone with irrmovable state
             }
