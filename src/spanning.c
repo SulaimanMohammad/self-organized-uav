@@ -617,6 +617,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
             {
                 drones[i].state = Irremovable_border;
                 drones[i].id_tag_to_border = currentDrones->id_tag_to_border;
+                drones[i].id_tag_to_sink = currentDrones->id_tag_to_sink;
                 return build_path_to_border(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
             else if (drones[i].state == Irremovable_border || ((drones[i].state == Irremovable || drones[i].state == Irremovable_border) && drones[i].id_tag_to_border != currentDrones->id_tag_to_border && drones[i].id_tag_to_border != -1))
@@ -627,6 +628,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
             {
                 drones[i].state = Irremovable;
                 drones[i].id_tag_to_border = currentDrones->id_tag_to_border;
+                drones[i].id_tag_to_sink = currentDrones->id_tag_to_sink;
                 return build_path_to_border(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
         }
@@ -704,21 +706,11 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
         connected = build_path_to_sink(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
         // When arriving to the sink or to another irremovable drone that belongs to another path that is connected to the sink
         // stop and mark all the drones that are taged with the same id of target with cconnected to recognize that they are connected to sink
-        if (connected)
-        {
-            for (int j = 0; j < numdrones; j++)
-            {
-                if (drones[j].id_tag_to_sink == drones[targets_order[i]].id_tag_to_sink)
-                {
-                    drones[j].connect_sink = true;
-                }
-            }
-        }
 
         /*
-        Build path to the border performed by all the target except the sink that is in targets_order , because the sink will be at the dirst index
-        and it will execute build path to border, which should be done only if no target id foud ( so no other path was built)
-        */
+         Build path to the border performed by all the target except the sink that is in targets_order , because the sink will be at the dirst index
+         and it will execute build path to border, which should be done only if no target id foud ( so no other path was built)
+         */
         if (drones[targets_order[i]].id != 0 && drones[targets_order[i]].drone_distance != 0) // not sink
         {
             drones[targets_order[i]].id_tag_to_border = drones[targets_order[i]].id;
@@ -727,6 +719,17 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
             if (id_irr_border > 0)
             {
                 drones[i].id_border_connection = id_irr_border;
+            }
+        }
+
+        if (connected)
+        {
+            for (int j = 0; j < numdrones; j++)
+            {
+                if (drones[j].id_tag_to_sink == drones[targets_order[i]].id_tag_to_sink)
+                {
+                    drones[j].connect_sink = true;
+                }
             }
         }
     }
@@ -807,16 +810,7 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
 
         set_num_drones_at_neighbors(drones, &DroneNeighbors[targets_order[i]], &drones[targets_order[i]], numdrones);
         connected = build_path_to_sink(DroneNeighbors, &drones[targets_order[i]], drones, numdrones, drones[targets_order[i]].id);
-        if (connected)
-        {
-            for (int j = 0; j < numdrones; j++)
-            {
-                if (drones[j].id_tag_to_sink == drones[targets_order[i]].id_tag_to_sink)
-                {
-                    drones[j].connect_sink = true;
-                }
-            }
-        }
+
         /*
         Build path to the border from the most close to the sink.
         and since the drone that is connect sink to border from the last phase was included in the array then if no other irremovable
@@ -827,6 +821,16 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
         if (id_irr_border > 0)
         {
             drones[targets_order[i]].id_border_connection = id_irr_border;
+        }
+        if (connected)
+        {
+            for (int j = 0; j < numdrones; j++)
+            {
+                if (drones[j].id_tag_to_sink == drones[targets_order[i]].id_tag_to_sink)
+                {
+                    drones[j].connect_sink = true;
+                }
+            }
         }
     }
     free(targets_order);
