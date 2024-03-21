@@ -556,7 +556,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
 
     for (int k = 0; k < irrmvbleSize; k++)
     {
-        if (irrmvble_id[k] != sender_id && drones[irrmvble_id[k]].state == 4)
+        if (irrmvble_id[k] != sender_id && drones[irrmvble_id[k]].state == Irremovable_border)
         {
             sscanf(irrmvble_dir[k], "s%d", &dir);
             break;
@@ -677,7 +677,7 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
     for (int i = 0; i < validCount; i++)
     {
         float mind_difference = FLT_MAX;
-        int target_close_id = 0;
+        int target_close_id = -1;
 
         for (int j = 0; j < validCount; j++)
         {
@@ -718,7 +718,8 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
                 drones[i].id_border_connection = id_irr_border;
             }
         }
-
+        // tag all those drones as connected to the sink so they are able to connect with them
+        // remember that during building path to border all those border thier id_tag_to_sink was also taged with the id of triggering drone
         if (connected)
         {
             for (int j = 0; j < numdrones; j++)
@@ -748,6 +749,7 @@ void perform_spanning(Drones drones[], struct Neighbors DroneNeighbors[], int nu
                 {
                     drones[targets_order[i]].id_border_connection = id_irr_border;
                     // tag all those drones as connected to the sink so they are able to connect with them
+                    // remember that during building path to border all those border thier id_tag_to_sink was also taged with the id of triggering drone
                     for (int j = 0; j < numdrones; j++)
                     {
                         if (drones[j].id_tag_to_sink == drones[targets_order[i]].id_tag_to_sink)
@@ -800,7 +802,7 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
     for (int i = 0; i < validCount; i++)
     {
         float mind_difference = FLT_MAX;
-        int target_close_is = 0;
+        int target_close_id = -1;
 
         // If target drone is not connected to the sink then try to connect it
         if (!drones[targets_order[i]].connect_sink)
@@ -813,12 +815,12 @@ void perform_further_spanning(Drones drones[], struct Neighbors DroneNeighbors[]
                     if (difference < mind_difference)
                     {
                         mind_difference = difference;
-                        target_close_is = drones[targets_order[j]].id;
+                        target_close_id = drones[targets_order[j]].id;
                     }
                 }
             }
         }
-        drones[targets_order[i]].closest_target = target_close_is;
+        drones[targets_order[i]].closest_target = target_close_id;
         drones[targets_order[i]].id_tag_to_sink = drones[targets_order[i]].id;
         bool connected = false;
 
