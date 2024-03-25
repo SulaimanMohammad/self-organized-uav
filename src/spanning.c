@@ -53,8 +53,8 @@ void generate_targets(Target *targets, int targets_size, float (*predefinedTarge
         {
             for (int i = 0; i < targets_size && i < 8; i++)
             { // Assuming there are 8 predefined targets
-                targets[i].x = predefinedTargets[i][0];
-                targets[i].y = predefinedTargets[i][1];
+                targets[i].x = predefinedTargets[i][0] + 0.01;
+                targets[i].y = predefinedTargets[i][1] + 0.01;
                 targets[i].found = false;
             }
         }
@@ -127,34 +127,18 @@ void set_state_target_check(Drones drones[], Drones *currentDrones, struct Neigh
         {
             targets[i].found = true;
             currentDrones->targetfound = 1;
-        }
-    }
-    // Edit and keep only one drone in the neighbors that will stay with target
-    /*
-    In case you need all drones stay with the target , Remove check_another_neighbor_detect_target
-    */
-    for (int i = 0; i < numdrones; i++)
-    {
-        if (drones[i].targetfound)
-            check_another_neighbor_detect_target(drones, neighbors, &drones[i], numdrones);
-    }
-    // Change the state of the drone that stays
-    for (int i = 0; i < numdrones; i++)
-    {
-        if (drones[i].targetfound)
-        {
-            int previous_state = drones[i].state;
+            int previous_state = currentDrones->state;
 
-            if (drones[i].state == Alone || drones[i].state == Free)
+            if (currentDrones->state == Alone || currentDrones->state == Free)
             {
-                drones[i].state = Irremovable;
+                currentDrones->state = Irremovable;
             }
-            if (drones[i].state == Border)
+            if (currentDrones->state == Border)
             {
-                drones[i].state = Irremovable_border;
+                currentDrones->state = Irremovable_border;
             }
-            if (drones[i].state != previous_state)
-                drones[i].previous_state = previous_state;
+            if (currentDrones->state != previous_state)
+                currentDrones->previous_state = previous_state;
         }
     }
 }
