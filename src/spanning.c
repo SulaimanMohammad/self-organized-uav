@@ -407,18 +407,22 @@ bool build_path_to_sink(struct Neighbors neighbors[], Drones *currentDrones, Dro
     // find the direction of the drone that send message to build the path
     char sender_dir[3];
     findDirofSender(drones, currentDrones, sender_dir, numdrones, sender_id);
-    float min_irrmovable;
 
     // check if there is any irremovable drone in the neighbors and close to the sink
     if (irrmvbleSize > 0)
     {
+        float min_irrmovable;
+
         for (int k = 0; k < irrmvbleSize; k++)
         {
-            if (irrmvble_id[k] != sender_id && drones[irrmvble_id[k]].id_tag_to_sink != currentDrones->id_tag_to_sink) // then after it will examined if it is connected to sink or not
+            if (irrmvble_id[k] != sender_id)
             {
-                min_irrmovable = neighbors[irrmvble_id[k]].distances[0];
-                sscanf(irrmvble_dir[k], "s%d", &dir);
-                break;
+                float difference = sqrt(pow(drones[irrmvble_id[k]].x - drones[currentDrones->closest_target].x, 2) + pow(drones[irrmvble_id[k]].y - drones[currentDrones->closest_target].y, 2));
+                if (difference < min_irrmovable)
+                {
+                    min_irrmovable = difference;
+                    sscanf(irrmvble_dir[k], "s%d", &dir);
+                }
             }
         }
     }
