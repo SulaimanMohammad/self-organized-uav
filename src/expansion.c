@@ -137,24 +137,24 @@ void creatSpots(struct Neighbors *neighbors, float Dx, float Dy)
 {
 
     float DxDy2 = (Dx * Dx) + (Dy * Dy);
-    float DxDy3a2 = DxDy2 + (3 * a * a);
+    float DxDy3a2 = DxDy2 + (3 * effective_a * effective_a);
     float sqDx = sqrt3 * Dx;
     float aDx = (2 * sqrt3) * Dx;
 
     addEntry(neighbors, "s0", round_to_decimals_float(sqrtf(DxDy2), 2));
-    addEntry(neighbors, "s1", round_to_decimals_float(sqrtf(DxDy3a2 + a * aDx), 2));
-    addEntry(neighbors, "s2", round_to_decimals_float(sqrtf(DxDy3a2 + a * (sqDx + (3 * Dy))), 2));
-    addEntry(neighbors, "s3", round_to_decimals_float(sqrtf(DxDy3a2 + a * (3 * Dy - sqDx)), 2));
-    addEntry(neighbors, "s4", round_to_decimals_float(sqrtf(DxDy3a2 - aDx * a), 2));
-    addEntry(neighbors, "s5", round_to_decimals_float(sqrtf(DxDy3a2 - a * (sqDx + (3 * Dy))), 2));
-    addEntry(neighbors, "s6", round_to_decimals_float(sqrtf(DxDy3a2 - a * (3 * Dy - sqDx)), 2));
+    addEntry(neighbors, "s1", round_to_decimals_float(sqrtf(DxDy3a2 + effective_a * aDx), 2));
+    addEntry(neighbors, "s2", round_to_decimals_float(sqrtf(DxDy3a2 + effective_a * (sqDx + (3 * Dy))), 2));
+    addEntry(neighbors, "s3", round_to_decimals_float(sqrtf(DxDy3a2 + effective_a * (3 * Dy - sqDx)), 2));
+    addEntry(neighbors, "s4", round_to_decimals_float(sqrtf(DxDy3a2 - aDx * effective_a), 2));
+    addEntry(neighbors, "s5", round_to_decimals_float(sqrtf(DxDy3a2 - effective_a * (sqDx + (3 * Dy))), 2));
+    addEntry(neighbors, "s6", round_to_decimals_float(sqrtf(DxDy3a2 - effective_a * (3 * Dy - sqDx)), 2));
 }
 
 void setDist(struct Neighbors *neighbors, float Dx, float Dy)
 {
 
     float DxDy2 = (Dx * Dx) + (Dy * Dy);
-    float DxDy3a2 = DxDy2 + (3 * a * a);
+    float DxDy3a2 = DxDy2 + (3 * effective_a * effective_a);
     float sqDx = sqrt3 * Dx;
     float aDx = (2 * sqrt3) * Dx;
 
@@ -163,17 +163,17 @@ void setDist(struct Neighbors *neighbors, float Dx, float Dy)
         if (strcmp(neighbors->keys[i], "s0") == 0)
             neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy2), 2);
         if (strcmp(neighbors->keys[i], "s1") == 0)
-            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 + a * aDx), 2);
+            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 + effective_a * aDx), 2);
         if (strcmp(neighbors->keys[i], "s2") == 0)
-            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 + a * (sqDx + (3 * Dy))), 2);
+            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 + effective_a * (sqDx + (3 * Dy))), 2);
         if (strcmp(neighbors->keys[i], "s3") == 0)
-            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 + a * (3 * Dy - sqDx)), 2);
+            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 + effective_a * (3 * Dy - sqDx)), 2);
         if (strcmp(neighbors->keys[i], "s4") == 0)
-            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 - aDx * a), 2);
+            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 - aDx * effective_a), 2);
         if (strcmp(neighbors->keys[i], "s5") == 0)
-            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 - a * (sqDx + (3 * Dy))), 2);
+            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 - effective_a * (sqDx + (3 * Dy))), 2);
         if (strcmp(neighbors->keys[i], "s6") == 0)
-            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 - a * (3 * Dy - sqDx)), 2);
+            neighbors->distances[i] = round_to_decimals_float(sqrtf(DxDy3a2 - effective_a * (3 * Dy - sqDx)), 2);
         // printf("    %s at distance %f\n ", neighbors->keys[i], neighbors->distances[i]);
     }
 }
