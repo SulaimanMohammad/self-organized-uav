@@ -39,26 +39,7 @@ for line in lines:
         stage_points.append((id, x, y, state, is_target))
     points_list.append(stage_points)
 
-colors =  ['g', 'b', 'c', 'm', 'y', 'aqua', 'aquamarine', 'azure', 'bisque', 'blue', 'blueviolet',
-                   'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue',
-                   'crimson', 'cyan', 'darkblue', 'darkcyan', 'darkgoldenrod', 'darkgreen',
-                   'darkkhaki', 'darkmagenta', 'darkolivegreen', 'darkorange', 'darkorchid', 'darkred',
-                   'darksalmon', 'darkseagreen', 'darkslateblue', 'darkslategray', 'darkturquoise', 'darkviolet',
-                   'deeppink', 'deepskyblue', 'dimgray', 'dodgerblue', 'firebrick', 'forestgreen', 'fuchsia',
-                   'gainsboro', 'gold', 'goldenrod', 'green', 'greenyellow', 'hotpink', 'indianred',
-                   'indigo', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lightblue',
-                   'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgray', 'lightgreen', 'lightpink',
-                   'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightsteelblue',
-                   'lightyellow', 'lime', 'limegreen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue',
-                   'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen',
-                   'mediumturquoise', 'mediumvioletred', 'midnightblue', 'navajowhite', 'navy', 'olive',
-                   'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise',
-                   'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple',
-                   'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'sandybrown',
-                   'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'springgreen',
-                   'steelblue', 'tan', 'teal', 'thistle', 'turquoise', 'violet', 'wheat', 'yellow',
-                   'yellowgreen'] * len(stage_points)# List of colors for each stage
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(8, 8))
 # save tagret
 points = points_list[0]
 ids, x, y, state, is_target = zip(*points)
@@ -88,6 +69,7 @@ def draw_hexagon(point, edgecolor='blue'):
     ax.add_patch(hexagon)
     stored_hexagons.append(hexagon)
 
+dpi_value = 500 # dpi quality for save output images 
 
 def update(frame):
     ax.clear()    
@@ -112,16 +94,18 @@ def update(frame):
     for point in state_2_points_border:
         ax.scatter(point[0], point[1], facecolor=(0.5, 0.5, 0.5, 0.7), marker='o', s=(a-1)*30)
         draw_hexagon(point)
-    # drone is border and find tagrzt too 
+        
+    # drone is border and find target too 
     state_2_points_both = [(x[i], y[i]) for i in range(len(points)) if state[i] == 4]
     for point in state_2_points_both:
         ax.scatter(point[0], point[1], facecolor=(0.5, 0.5, 0.5, 0.7), marker='o', s=(a-1)*30)
         ax.scatter(point[0], point[1], facecolor=(1, 0.0, 0.0, 0.5), marker='o', s=(a-1)*20)
         draw_hexagon(point)
 
-    free_points = [(x[i], y[i]) for i in range(len(points)) if state[i] ==0 or state[i] ==1]
-    for point,i in zip(free_points, range(0,len(colors))) :
-        ax.scatter(point[0], point[1], color=colors[i], marker='o', s=(a+9)*10)
+    # Modify this section to use a single color for free points
+    free_points = [(x[i], y[i]) for i in range(len(points)) if state[i] == 0 or state[i] == 1]
+    for point in free_points:
+        ax.scatter(point[0], point[1], color='cyan', marker='o', s=(a+9)*10)
         draw_hexagon(point)
 
     target_points = [(x[i], y[i]) for i in range(len(points)) if is_target[i] == 1]
@@ -129,7 +113,7 @@ def update(frame):
         ax.scatter(point[0], point[1], facecolor=(0, 0, 0, 0.4), marker='8', s=(a-1)*20)
         draw_hexagon(point)
         
-    if frame !=0: #  for everything other than the targets
+    if frame != 0:  #  for everything other than the targets
         # Add IDs as text on top of each point
         for i in range(len(ids)):
             ax.text(x[i], y[i], str(ids[i]), fontsize=8, ha='center', va='bottom')
@@ -139,8 +123,7 @@ def update(frame):
     ax.axvline(x=0, color='k')
     ax.grid(True)
     # Set the title for the current stage
-    ax.set_title(f"Stage {frame+1}")
-    fig.savefig(os.path.join(directory, f'frame_{frame}.jpg'))
+    fig.savefig(os.path.join(directory, f'frame_{frame}.jpg'), dpi=dpi_value)
 
 
 # Create the animation object
