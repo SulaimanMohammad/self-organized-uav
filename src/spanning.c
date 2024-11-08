@@ -51,7 +51,7 @@ void generate_targets(Target *targets, int targets_size, float (*predefinedTarge
         // Ensure that the predefinedTargets pointer is not NULL
         if (predefinedTargets != NULL)
         {
-            for (int i = 0; i < targets_size && i < 8; i++)
+            for (int i = 0; i < targets_size; i++)
             { // Assuming there are 8 predefined targets
                 targets[i].x = predefinedTargets[i][0] + 0.01;
                 targets[i].y = predefinedTargets[i][1] + 0.01;
@@ -574,7 +574,6 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
                 {
                     if (rand() % 2) // This results in 0 or 1 randomly
                         dir = j;    // No need to update max_dist since it's equal
-                    // If 0, keep dir as is
                 }
                 else if (max_dist < neighbors[currentDrones->id].distances[j])
                 {
@@ -601,7 +600,7 @@ int build_path_to_border(struct Neighbors neighbors[], Drones *currentDrones, Dr
                 drones[i].id_tag_to_sink = currentDrones->id_tag_to_sink;
                 return build_path_to_border(neighbors, &drones[i], drones, numdrones, currentDrones->id);
             }
-            else if (drones[i].state == 4)
+            else if (drones[i].state == Irremovable_border)
             {
                 return drones[i].id; // arrived to drone with irrmovable state
             }
