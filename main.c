@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     {
         creatSpots(&DroneNeighbors[i], drones[i].x, drones[i].y); // drones[i].x, drones[i].y are the coordinates drom (0,0) the sink
     }
-
+    int number_of_rounds = 1;
     perform_first_expansion(drones, DroneNeighbors, numdrones, fp);
     form_border_and_update_states(drones, DroneNeighbors, numdrones, targets, targets_size, fp);
     perform_spanning(drones, DroneNeighbors, numdrones, fp);
@@ -78,9 +78,10 @@ int main(int argc, char *argv[])
         if (drones[i].state == Border || drones[i].state == Irremovable || drones[i].state == Irremovable_border)
             num_drones_border_irrmovable++;
     }
-    int round = 0;
+    printf("Round %d finished\n", number_of_rounds);
     while (num_drones_border_irrmovable < numdrones)
     {
+
         num_drones_border_irrmovable = 0;
         perform_further_expansion(drones, DroneNeighbors, numdrones, fp);
         form_further_border_and_update_states(drones, DroneNeighbors, numdrones, targets, targets_size, fp);
@@ -96,6 +97,8 @@ int main(int argc, char *argv[])
             if (drones[i].previous_state != Irremovable)
                 drones[i].previous_state = drones[i].state;
         }
+        number_of_rounds++;
+        printf("Round %d finished\n", number_of_rounds);
     }
     saveDrones(drones, numdrones, fp);
 
