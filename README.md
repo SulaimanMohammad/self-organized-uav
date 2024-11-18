@@ -5,6 +5,8 @@ VESPA (Vehicle Exploration using Self-organized Parallel Algorithm) is a distrib
 
 VESPA leverages only one-hop information to dynamically adjust drone positions and connectivity, maintaining coverage while reducing drone count. It is optimized for search and rescue, environmental monitoring, and temporary network deployment in areas with limited ground access.
 
+[The implementation of VESPA on a physical drone is available here](https://github.com/SulaimanMohammad/Drone_VESPA)
+
 ## Key Features
 - **Distributed Target Detection**: Drones autonomously identify and cover targets within their range.
 - **Dynamic Connectivity**: Ensures a continuous multi-hop path from each discovered target to the sink.
@@ -19,7 +21,9 @@ To execute the VESPA simulation, run the following script. It will create the bu
 - `n`: Number of drones.
 - `a`: Communication range between drones and their neighbors. If a is not specified, it defaults to 20.
 Note: The targets are not shared among drones. Each drone will individually search for targets within its region after every movement.
+
 The script will generate images for each stage of the simulation in the animation_result directory.
+
 The script will prompt you to choose how to define the targets. There are two options:
 #### 1. **Using Predefined Targets**: 
 In this option, you can specify the number of targets you want and manually enter the coordinates (x, y) for each target.
@@ -54,11 +58,3 @@ This benchmark compares the performance of the VESPA and SAS algorithms for both
 ```
 Important: To run this benchmark, you need to have the SageMath library installed, as it is required for generating SAS data.
 
-## Citations
-This project is based on following paper with modifications:
-
-Yann Busnel, Christelle Caillouet, David Coudert. Self-organized Disaster Management System by
-Distributed Deployment of Connected UAVs. ICT-DM 2019 - 6th International Conference on Infor-
-mation and Communication Technologies for Disaster Management, Dec 2019, Paris, France. pp.1-8,
-10.1109/ICT-DM47966.2019.9032964. hal-02349396
-[link](https://inria.hal.science/hal-02349396/file/Spread_Shrink(4).pdf)
