@@ -9,7 +9,7 @@ output_directory = "../Fig_results/"
 os.makedirs(output_directory, exist_ok=True)
 
 VESPA_path = 'benchmark_predefined_targets_VESPA.csv'
-Sas_path= './SAS/benchmark_8_targets_sas.csv'
+Sas_path= './SAS/benchmark_predefined_targets_SAS.csv'
 # Read the CSV file
 VESPA_data = pd.read_csv(VESPA_path, sep='\t')
 Sas = pd.read_csv(Sas_path, sep='\t')
@@ -37,35 +37,54 @@ plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 plt.savefig(f"{output_directory}num drones VESPA vs SAS 8 Targets.png", format='png', dpi=300)
 
-
-## Find the df_performance percentage
-# Include 'n' values (number of drones) to track discovery as drone count increases
-n_values = list(range(5, 205, 5))  # Generating n values from 5 to 200 in increments of 5
-
-# Recreate DataFrame with 'n', SAS_mean, VESPA_mean, and percentage improvement
-df_performance = pd.DataFrame({
+# Sample data (replace with actual data as needed)
+df = pd.DataFrame({
     'n': VESPA_data["n"],
     'SAS_mean': Sas["SAS-mean"],
     'VESPA_mean': VESPA_data["Mean"]
 })
 
-# Calculate the percentage improvement of VESPA over SAS in target discovery for each 'n'
-df_performance['VESPA_improvement_percentage'] = (
-    ((df_performance['VESPA_mean'] - df_performance['SAS_mean']) / df_performance['SAS_mean'].replace(0, float('nan'))) * 100
-).fillna(0)
+# Define bins for mean values
+bins = [(0.5, 1), (1, 1.5), (1.5, 2), (2, 2.5), (2.5, 3), (3, 3.5), (3.5, 4), (4, 4.5), (4.5, 5), (5, 5.5), 
+        (5.5, 6), (6, 6.5), (6.5, 7), (7, 7.5), (7.5, 7.9), (7.9, 8)]
 
-# Calculate the average percentage improvement across all values of 'n'
-average_improvement_percentage_across_n = df_performance['VESPA_improvement_percentage'].mean()
-# Display the average improvement
-print("VESPA demonstrates a", f"{average_improvement_percentage_across_n:.2f}%", "improvement over all in compare with SaS")
+# Initialize result list
+results = []
 
-df_filtered = df_performance[(df_performance['SAS_mean'] >= 7.95) | (df_performance['VESPA_mean'] >= 7.95)]
+# Loop over each bin range and filter data accordingly for SAS and VESPA
+for lower, upper in bins:
+    vespa_n = df[(df['VESPA_mean'] >= lower) & (df['VESPA_mean'] < upper)]['n']
+    sas_n = df[(df['SAS_mean'] >= lower) & (df['SAS_mean'] < upper)]['n']
+    
+    vespa_avg_n = vespa_n.mean() if not vespa_n.empty else None
+    sas_avg_n = sas_n.mean() if not sas_n.empty else None
+    
+    results.append({
+        'Mean_Range': f"{lower}-{upper}",
+        'VESPA_n_Avg': vespa_avg_n,
+        'SAS_n_Avg': sas_avg_n
+    })
 
-# Calculate the average percentage improvement across the filtered values of 'n'
-average_improvement_percentage_filtered = df_filtered['VESPA_improvement_percentage'].mean()
+results_df = pd.DataFrame(results)
 
-# Display the average improvement for the filtered condition
-print("VESPA demonstrates a",f"{average_improvement_percentage_filtered:.2f}%", " of improvement to find all targets over SAS.")
+# Fill NaN values with previous valid values
+results_df['VESPA_n_Avg'] = results_df['VESPA_n_Avg'].ffill()
+results_df['SAS_n_Avg'] = results_df['SAS_n_Avg'].ffill()
+
+# Calculate Improvement Percentage
+results_df['Improvement_Percentage'] = results_df.apply(
+    lambda row: ((row['SAS_n_Avg'] - row['VESPA_n_Avg']) / row['SAS_n_Avg']) * 100
+    if pd.notnull(row['SAS_n_Avg']) and pd.notnull(row['VESPA_n_Avg']) else None, axis=1
+)
+
+average_improvement_percentage_across_n = results_df['Improvement_Percentage'].mean()
+print(f"VESPA demonstrates an average {average_improvement_percentage_across_n:.2f}% improvement over SAS.")
+
+# Last improvement value
+average_improvement_percentage_filtered = results_df['Improvement_Percentage'].iloc[-1]
+print(f"VESPA demonstrates a {average_improvement_percentage_filtered:.2f}% improvement to find all targets over SAS.")
+
+
 
 plt.figure(figsize=(10, 6))
 positions = VESPA_data['n'].values
