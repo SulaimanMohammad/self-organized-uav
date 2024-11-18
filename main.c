@@ -1,15 +1,68 @@
 #include "expansion.h"
 #include "spanning.h"
 #include "balancing.h"
-
 #include <stdio.h>
+#define MAX_TARGETS 100
+
 int numdrones = 0;
+void parse_predefined_targets(char *line, float predefinedTargets[][2], int size)
+{
+    // Check if the line starts with '#' and return immediately if it does
+    if (line[0] == '#')
+    {
+        return;
+    }
+    char *token = strtok(line, "{}, ");
+    for (int i = 0; i < size && token != NULL; i++)
+    {
+        predefinedTargets[i][0] = atof(token); // x-coordinate
+        token = strtok(NULL, "{}, ");
+        if (token != NULL)
+        {
+            predefinedTargets[i][1] = atof(token); // y-coordinate
+            token = strtok(NULL, "{}, ");
+        }
+    }
+}
+void parse_parameters(int *targets_size, bool *random_targets, float predefinedTargets[MAX_TARGETS][2])
+{
+    // Parse parameters from file
+    FILE *params_file = fopen("../benchmark/parameters.txt", "r");
+    char line[256];
+    while (fgets(line, sizeof(line), params_file))
+    {
+        if (sscanf(line, "size_of_target=%d", targets_size) == 1)
+            continue;
+        if (strstr(line, "predfined_targets_random=") != NULL)
+        {
+            // Parse boolean value for random_targets
+            if (strstr(line, "true") != NULL)
+            {
+                *random_targets = true;
+            }
+            else if (strstr(line, "false") != NULL)
+            {
+                *random_targets = false;
+            }
+            continue;
+        }
+        if (strstr(line, "predfined_targets=") != NULL)
+        {
+            char *target_values = strchr(line, '{');
+            if (target_values != NULL)
+            {
+                parse_predefined_targets(target_values, predefinedTargets, *targets_size);
+            }
+        }
+    }
+    fclose(params_file);
+}
+
 int main(int argc, char *argv[])
 {
     FILE *fp;
     fp = fopen("output.txt", "w");
-    // srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
-    srand(0);
+    srand((unsigned int)time(NULL)); // seed should be called one time not in the function that will be called each time
     if (argc < 2)
     {
         printf("Please provide a number of drone as argument ex.\"n=60\" \n");
@@ -26,15 +79,15 @@ int main(int argc, char *argv[])
         }
     }
 
-    const int targets_size = 8; // Number of targets
+    int targets_size = 0;
+    bool random_targets = false;
+    float predefinedTargets[MAX_TARGETS][2];
+    parse_parameters(&targets_size, &random_targets, predefinedTargets);
     Target targets[targets_size];
-
-    // Coordinates of the specific targets
-    float predefinedTargets[8][2] = {
-        {0, 85}, {0, -85}, {85, 0}, {-85, 0}, {75, 75}, {75, -75}, {-75, 75}, {-75, -75}};
-
-    generate_targets(targets, targets_size, predefinedTargets);
-    // generate_targets(targets, targets_size, NULL); // for random targets
+    if (random_targets)
+        generate_targets(targets, targets_size, NULL);
+    else
+        generate_targets(targets, targets_size, predefinedTargets);
 
     save_targes(targets, targets_size, fp);
 
