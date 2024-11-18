@@ -4,6 +4,65 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define MAX_TARGETS 100
+
+void parse_predefined_targets(char *line, float predefinedTargets[][2], int size)
+{
+    // Check if the line starts with '#' and return immediately if it does
+    if (line[0] == '#')
+    {
+        return;
+    }
+    char *token = strtok(line, "{}, ");
+    for (int i = 0; i < size && token != NULL; i++)
+    {
+        predefinedTargets[i][0] = atof(token); // x-coordinate
+        token = strtok(NULL, "{}, ");
+        if (token != NULL)
+        {
+            predefinedTargets[i][1] = atof(token); // y-coordinate
+            token = strtok(NULL, "{}, ");
+        }
+    }
+}
+
+void parse_parameters(int *max_run, int *max_drones, int *targets_size, bool *random_targets, float predefinedTargets[MAX_TARGETS][2])
+{
+    // Parse parameters from file
+    FILE *params_file = fopen("../benchmark/parameters.txt", "r");
+    char line[256];
+    while (fgets(line, sizeof(line), params_file))
+    {
+        if (sscanf(line, "number_runs= %d", max_run) == 1)
+            continue;
+        if (sscanf(line, "max_num_drones_to_test= %d", max_drones) == 1)
+            continue;
+        if (sscanf(line, "size_of_target=%d", targets_size) == 1)
+            continue;
+        if (strstr(line, "predfined_targets_random=") != NULL)
+        {
+            // Parse boolean value for random_targets
+            if (strstr(line, "true") != NULL)
+            {
+                *random_targets = true;
+            }
+            else if (strstr(line, "false") != NULL)
+            {
+                *random_targets = false;
+            }
+            continue;
+        }
+        if (strstr(line, "predfined_targets=") != NULL)
+        {
+            char *target_values = strchr(line, '{');
+            if (target_values != NULL)
+            {
+                parse_predefined_targets(target_values, predefinedTargets, *targets_size);
+            }
+        }
+    }
+    fclose(params_file);
+}
 
 int find_number_of_found_targets(Target *targets, int targets_size)
 {
@@ -24,31 +83,29 @@ void reset_target_found(Target *targets, int targets_size)
     }
 }
 
-int max_run = 100;
-int min_drones = 5;
-int max_drones = 200;
 int main(int argc, char *argv[])
 {
     FILE *benchmark;
     benchmark = fopen("../benchmark/benchmark_predefined_targets_VESPA.csv", "w");
-    // fprintf(benchmark, "n\tMin\tMean\tStd\tVar\tMax\tMin_round\tMean_round\tStd_round\tVar_round\tMax_round\n");
     fprintf(benchmark, "n\tMin\tMean\tStd\tVar\tMax\tMin_round\tMean_round\tStd_round\tVar_round\tMax_round\tMin_used\tMean_used\tMax_used\n");
-    const int targets_size = 8;
-
     FILE *fp;
     fp = fopen("output.txt", "w");
-    Target targets[targets_size];
+    int max_run = 0;
+    int min_drones = 5;
+    int max_drones = 0;
+    int targets_size = 0;
+    bool random_targets = false;
+    float predefinedTargets[MAX_TARGETS][2];
+    parse_parameters(&max_run, &max_drones, &targets_size, &random_targets, predefinedTargets);
 
     for (int numdrones = min_drones; numdrones <= max_drones; numdrones = numdrones + 5)
     {
+        Target targets[targets_size];
+        if (random_targets)
+            generate_targets(targets, targets_size, NULL);
+        else
+            generate_targets(targets, targets_size, predefinedTargets);
 
-        // Coordinates of the specific targets
-        // float predefinedTargets[8][2] = {
-        //     {0, 100}, {0, -85 * 3}, {85 * 2, 0}, {-85 * 4, 60}, {60 * 2, 75}, {20 * 3, -75 * 2}, {-90, 300}, {-200, 150}};
-        float predefinedTargets[8][2] = {
-            {0, 85}, {0, -85}, {85, 0}, {-85, 0}, {75, 75}, {75, -75}, {-75, 75}, {-75, -75}};
-
-        generate_targets(targets, targets_size, predefinedTargets);
         save_targes(targets, targets_size, fp);
 
         int min_targets_found = INT_MAX;
@@ -240,8 +297,8 @@ int main(int argc, char *argv[])
                 final_average_number_of_used_drones,
                 max_drones_used);
 
-        printf("\n number of drones= %d\n", numdrones);
-        printf("\nAverage found= %f\n", average_targets_found);
+        printf("\n      Number of drones= %d\n", numdrones);
+        printf("Average found= %f\n", average_targets_found);
         printf("Minimum found= %d\n", min_targets_found);
         printf("Maximum found= %d\n", max_targets_found);
         printf("Variance= %f\n", variance_targets_found);

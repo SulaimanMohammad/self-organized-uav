@@ -6,31 +6,29 @@
 
 #define MAX_LINE_LENGTH 10000
 
-// Function to count the number of num_poi blocks in the file
-int count_num_poi(FILE *file)
+void parse_parameters(int *max_drones, int *max_number_targets, int *size_set_of_target)
 {
-    char line[MAX_LINE_LENGTH];
-    int count = 0;
-
-    while (fgets(line, sizeof(line), file))
+    // Parse parameters from file
+    FILE *params_file = fopen("../benchmark/parameters.txt", "r");
+    char line[256];
+    while (fgets(line, sizeof(line), params_file))
     {
-        int num_poi;
-        if (sscanf(line, "num_poi: %d", &num_poi) == 1) // Match a line that contains "num_poi: <number>"
-        {
-            count++;
-        }
+        if (sscanf(line, "max_number_targets= %d", max_number_targets) == 1)
+            continue;
+        if (sscanf(line, "number_configurations_per_targets= %d", size_set_of_target) == 1)
+            continue;
+        if (sscanf(line, "max_drones_to_check=%d", max_drones) == 1)
+            continue;
     }
-    rewind(file);
-    return count;
+    fclose(params_file);
 }
 
-int ****read_coordinates(FILE *file, int *num_poi_array, int size_set_of_target, int *block_count)
+int ****read_coordinates(FILE *file, int *num_poi_array, int size_set_of_target, int block_count)
 {
     char line[MAX_LINE_LENGTH];
     int num_poi = 0, current_block = -1, line_in_block = 0;
 
-    *block_count = count_num_poi(file);
-    int ****blocks = malloc(*block_count * sizeof(int ***));
+    int ****blocks = malloc(block_count * sizeof(int ***));
     if (blocks == NULL)
     {
         perror("Memory allocation failed for blocks");
@@ -118,62 +116,6 @@ int ****read_coordinates(FILE *file, int *num_poi_array, int size_set_of_target,
     return blocks;
 }
 
-// Function to print a single block
-void print_block(int ***block, int size_set_of_target, int num_poi)
-{
-    printf("{\n");
-    for (int j = 0; j < size_set_of_target; j++) // Loop through each row
-    {
-        printf(" {");
-        for (int k = 0; k < num_poi; k++) // Loop through each coordinate pair in the row
-        {
-            if (block[j] == NULL || block[j][k] == NULL)
-            {
-                printf(" NULL ");
-                continue;
-            }
-            printf(" { %d, %d }", block[j][k][0], block[j][k][1]);
-            if (k < num_poi - 1)
-            {
-                printf(", ");
-            }
-        }
-        printf(" }");
-        if (j < size_set_of_target - 1) // Assuming rows should be separated by commas
-        {
-            printf(",\n");
-        }
-        else
-        {
-            printf("\n");
-        }
-    }
-    printf("}\n\n");
-}
-
-// Function to iterate over all blocks and print one by one
-void print_all_blocks(int ****blocks, int *num_poi_array, int size_set_of_target, int block_count)
-{
-    for (int i = 0; i < block_count; i++)
-    {
-        printf("Block %d with num_poi: %d\n", i, num_poi_array[i]);
-
-        if (blocks[i] == NULL)
-        {
-            printf("{\n { NULL },\n { NULL },\n { NULL }\n}\n\n");
-            continue;
-        }
-
-        if (num_poi_array[i] == 0) // Handle empty num_poi case
-        {
-            printf("{\n { },\n { },\n { }\n}\n\n");
-            continue;
-        }
-
-        print_block(blocks[i], size_set_of_target, num_poi_array[i]); // Print each block
-    }
-}
-
 // Function to get a specific block by index
 int ***get_block(int ****blocks, int block_index)
 {
@@ -183,29 +125,6 @@ int ***get_block(int ****blocks, int block_index)
 int **get_set_targets(int ***block, int set_index)
 {
     return block[set_index];
-}
-
-// Function to print a specific set (row) of coordinates
-void print_set(int **set, int num_poi)
-{
-    printf("{ ");
-    for (int i = 0; i < num_poi; i++)
-    {
-        printf("{ %d, %d }", set[i][0], set[i][1]);
-        if (i < num_poi - 1)
-        {
-            printf(", ");
-        }
-    }
-    printf(" }\n");
-}
-
-// Example function to demonstrate getting and printing specific blocks
-void print_specific_block(int ****blocks, int *num_poi_array, int size_set_of_target, int block_index)
-{
-    int ***block = get_block(blocks, block_index); // Get the specific block
-    printf("num_poi: %d\n", num_poi_array[block_index]);
-    print_block(block, size_set_of_target, num_poi_array[block_index]); // Print the block
 }
 
 int find_number_of_found_targets(Target *targets, int targets_size)
@@ -228,25 +147,23 @@ void reset_target_found(Target *targets, int targets_size)
 }
 
 int max_run = 1;
-// int min_drones = 20;
-// int max_drones = 230;
 int main(int argc, char *argv[])
 {
     FILE *benchmark;
     benchmark = fopen("../benchmark/benchmark_random_targets_VESPA.csv", "w");
     fprintf(benchmark, "num_targets\tMin_num_drones\tMean_num_drones\tStd_num_drones\tMax_num_drones\tMin_num_drones_irr\tMean_num_drones_irr\tStd_num_drones_irr\tMax_num_drones_irr\n");
-    //    srand(0);
     FILE *fp;
     fp = fopen("output.txt", "w");
     FILE *file_targaets = fopen("../benchmark/SAS/random_targets.txt", "r");
-    int block_count;
-    int size_set_of_target = 200;
-    int *num_poi_array = malloc(30 * sizeof(int));
-    int ****blocks = read_coordinates(file_targaets, num_poi_array, size_set_of_target, &block_count);
-    // print_all_blocks(blocks, num_poi_array, size_set_of_target, block_count);
-    for (int num_targets = 1; num_targets <= block_count; num_targets++)
+    int min_drones = 4;
+    int max_drones = 0;
+    int size_set_of_target = 0;
+    int max_number_targets = 0;
+    parse_parameters(&max_drones, &max_number_targets, &size_set_of_target);
+    int *num_poi_array = malloc(max_number_targets * sizeof(int));
+    int ****blocks = read_coordinates(file_targaets, num_poi_array, size_set_of_target, max_number_targets);
+    for (int num_targets = 1; num_targets <= max_number_targets; num_targets++)
     {
-
         int ***block = get_block(blocks, num_targets - 1);
         int min_numdrones = INT_MAX;
         int max_numdrones = 0;
@@ -276,7 +193,7 @@ int main(int argc, char *argv[])
             generate_targets(targets, num_targets, predefinedTargets);
             save_targes(targets, num_targets, fp);
 
-            for (int numdrones_i = 4; numdrones_i <= 250; numdrones_i = numdrones_i + 1)
+            for (int numdrones_i = min_drones; numdrones_i <= max_drones; numdrones_i = numdrones_i + 1)
             {
                 int numdrones = numdrones_i;
                 bool certain_all_run_find = false;
@@ -317,7 +234,7 @@ int main(int argc, char *argv[])
                 if (targets_found_inround == num_targets)
                 {
                     all_found = true;
-                    numdrones_i = 255;
+                    numdrones_i = max_drones + 1;
                 }
 
                 for (int i = 0; i < numdrones; i++)
@@ -368,7 +285,7 @@ int main(int argc, char *argv[])
                 free_memory_drone(drones, numdrones);
                 if (all_found)
                 {
-                    numdrones_i = 255;
+                    numdrones_i = max_drones + 1;
                     num_used_drones = numdrones;
                     counter_run_all_found++;
                     if (numdrones < min_numdrones)
@@ -405,7 +322,7 @@ int main(int argc, char *argv[])
         float variance_numdrones_used_drones_irr = (sum_squared_numdrones_used_drones_irr / (float)size_set_of_target) - (average_number_of_used_drones_irr * average_number_of_used_drones_irr);
         float standard_deviation_numdrones_used_drones_irr = sqrt(variance_numdrones_used_drones_irr);
 
-        printf("\nnum of targets found= %d\n", num_targets);
+        printf("\n      Number of targets = %d with %d random configuration \n", num_targets, size_set_of_target);
         printf("Average found= %f\n", average_numdrones);
         printf("Minimum found= %d\n", min_numdrones);
         printf("Maximum found= %d\n", max_numdrones);
@@ -427,7 +344,7 @@ int main(int argc, char *argv[])
                 max_drones_used_irr);
     }
     // Free memory
-    for (int i = 0; i < block_count; i++)
+    for (int i = 0; i < max_number_targets; i++)
     {
         if (blocks[i] != NULL)
         {
