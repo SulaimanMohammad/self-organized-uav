@@ -13,6 +13,7 @@ Experiments with ExSpanBal
 #                  https://www.gnu.org/licenses/
 # ****************************************************************************
 import sage
+import re
 
 from sage.graphs.graph import Graph
 from sage.functions.other import sqrt
@@ -68,14 +69,15 @@ import time
 
 
 
-def exp1(nmin=5, nmax=200, step=5, runs=100, filename=None):
-
+def exp1(poi, nmax=200, runs=100, filename=None):
+    nmin=5
+    step=5
     # poi = [(4, 0), (2, 4), (-2, 4), (-6, 4), (-4, 0), (-2, -4), (2, -4), (6, -4)]
-    poi = [(5, 0), (2, 5), (-2, 5), (-7, 5), (-5, 0), (-2, -5), (2, -5), (7, -5)]
+    #poi = [(5, 0), (2, 5), (-2, 5), (-7, 5), (-5, 0), (-2, -5), (2, -5), (7, -5)]
 
     def values(n, s):
         return n, min(s), float(mean(s)), float(stdev(s)), float(variance(s)), max(s)
-    f = open("benchmark_8_targets_sas.csv", 'w')
+    f = open("benchmark_predefined_targets_SAS.csv", 'w')
     f.write("n\tSAS-min\tSAS-mean\tSAS-std\tSAS-var\tSAS-max\tCDY-min\tCDY-mean\tCDY-std\tCDY-var\tCDY-max\n")
     random.seed(time.time())
     SAS = []
@@ -303,9 +305,10 @@ def get_min_CDY(poi, nmin=1, nmax=1000, I=None):
 
 
 
-def exp3(nmin=1, nmax=30, runs=200, filename=None, steiner=False):
+def exp3(nmax=30, runs=200, filename=None, steiner=False):
     """
     """
+    nmin=1
     def values(n, s):
         if len(s) == 0:
             # Handle case where `s` is empty
@@ -407,7 +410,52 @@ def coordinates_poi(pio, radius=20):
         coords.append( (coordinates_x, coordinates_y) )
     return coords
 
-print("Run for 8 Targets\n\n")
-exp1()
-print("Run for 30 random Targets\n\n")
-exp3()
+
+
+
+def reverse_coordinates(coords, radius=20):
+    sage_pio = []
+    for coord in coords:
+        coord_x, coord_y = coord
+        # Reverse transformation for y-coordinate
+        y = round( (2.0/3.0) *(-coord_y / (radius * math.sin(math.pi / 6.0))))
+        # Reverse transformation for x-coordinate
+        x = round( ((2*coord_x)/(radius * math.cos(math.pi/ 6.0)) - y) / 2.0)
+        sage_pio.append((x, y))
+    return sage_pio
+
+
+
+with open('../parameters.txt', 'r') as file:
+    for line in file:
+        if 'predfined_targets=' in line:
+            # Extract coordinates from the line
+            targets = re.findall(r'\{([-]?\d+),\s*([-]?\d+)\}', line)
+            poi_initia = [(int(x), int(y)) for x, y in targets]
+            poi= reverse_coordinates(poi_initia, radius=20)
+
+        elif 'number_runs=' in line:
+            # Extract number of runs
+            runs = int(re.search(r'number_runs=(\d+)', line).group(1))
+
+        elif 'max_num_drones_to_test=' in line:
+            # Extract max number of drones
+            nmax = int(re.search(r'max_num_drones_to_test=(\d+)', line).group(1))
+
+        elif 'max_number_targets=' in line:
+            # Extract max number of targets
+            max_number_targets = int(re.search(r'max_number_targets=(\d+)', line).group(1))
+
+        elif 'number_configurations_per_targets=' in line:
+            # Extract number of configurations per target
+            number_configurations_per_targets = int(re.search(r'number_configurations_per_targets=(\d+)', line).group(1))
+
+        elif 'max_drones_to_check=' in line:
+            # Extract max drones to check
+            max_drones_to_check = int(re.search(r'max_drones_to_check=(\d+)', line).group(1))
+
+
+print("Run for defined Targets\n\n")
+exp1(poi, nmax,runs)
+print("Run for "+ f"{max_number_targets}" + " random Targets\n\n")
+exp3(max_number_targets, number_configurations_per_targets)
