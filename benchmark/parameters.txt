@@ -1,0 +1,16 @@
+# Targets for one single test and the benchmarks
+size_of_target=8
+predfined_targets=predfined_targets={{0, 85}, {0, -85}, {85, 0}, {-85, 0}, {75, 75}, {75, -75}, {-75, 75}, {-75, -75}}
+predfined_targets_random=false
+
+# For predfined targets
+number_runs=1000
+max_num_drones_to_test=200
+
+# For random targets
+max_number_targets=30
+number_configurations_per_targets=200
+max_drones_to_check=250
+
+
+
