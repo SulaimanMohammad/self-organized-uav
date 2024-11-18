@@ -22,7 +22,7 @@ void generate_targets(Target *targets, int targets_size, float (*predefinedTarge
 {
     if (predefinedTargets == NULL)
     {
-        printf(" Generate random targets \n ");
+        printf("Generate random targets \n");
         int n = targets_size * 0.50; // to detrmine
         int dir1, dir2;
         int mult1, mult2;
