@@ -117,7 +117,7 @@ for i, n in enumerate(positions):
                showfliers=False)
 
 plt.xlabel('Number of Drones', fontsize=12)
-plt.ylabel('Max/Avg/Max Number \n of Discovered Targets', fontsize=12)
+plt.ylabel('Max/Avg/Min Number \n of Discovered Targets', fontsize=12)
 plt.yticks(np.arange(0,9, 1), fontsize=12)
 xticks_range = np.arange(start=VESPA_data['n'].min(), stop=VESPA_data['n'].max() + 1, step=10)
 plt.xticks(ticks=xticks_range, labels=xticks_range)
@@ -126,7 +126,7 @@ plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 legend_elements = [Patch(facecolor='orange', edgecolor='orange', label='VESPA', alpha=0.5),
                    Patch(facecolor='purple', edgecolor='purple', label='SAS', alpha=0.5)]
 plt.legend(handles=legend_elements, loc='lower right')
-plt.savefig(f"{output_directory}Max-Avg-Max num drones VESPA vs SAS 8 Targets.png", format='png', dpi=300)
+plt.savefig(f"{output_directory}Max-Avg-Min num drones VESPA vs SAS 8 Targets.png", format='png', dpi=300)
 
 
 
@@ -183,8 +183,9 @@ for n in positions:
                     capprops=dict(color="orange"),
                     showfliers=False)
 plt.xlabel('Number of Drones', fontsize=12)
-plt.ylabel('Max/Avg/Max Number \n of 3-phase Round', fontsize=12)
+plt.ylabel('Max/Avg/Min Number \n of 3-phase Round', fontsize=12)
 plt.xticks(np.arange(min(positions), max(positions) + 1, 5))
+plt.tick_params(axis='x', labelrotation=45)  # Rotate tick labels for readability
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
-plt.savefig(f"{output_directory}Max-Avg-Max Number and Variance 3-phase Round.png", format='png', dpi=300)
+plt.savefig(f"{output_directory}Max-Avg-Min Number and Variance 3-phase Round.png", format='png', dpi=300)
