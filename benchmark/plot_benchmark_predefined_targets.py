@@ -14,12 +14,11 @@ Sas_path= './SAS/benchmark_predefined_targets_SAS.csv'
 VESPA_data = pd.read_csv(VESPA_path, sep='\t')
 Sas = pd.read_csv(Sas_path, sep='\t')
 
-VESPA_data['Upper'] = VESPA_data['Mean'] + VESPA_data['Std']
-VESPA_data['Lower'] = VESPA_data['Mean'] - VESPA_data['Std']
+VESPA_data['Upper'] = VESPA_data['Mean'] + VESPA_data['Var']
+VESPA_data['Lower'] = VESPA_data['Mean'] - VESPA_data['Var']
 
-Sas['Upper'] = Sas['SAS-mean'] + Sas['SAS-std']
-Sas['Lower'] = Sas['SAS-mean'] - Sas['SAS-std']
-
+Sas['Upper'] = Sas['SAS-mean'] + Sas['SAS-var']
+Sas['Lower'] = Sas['SAS-mean'] - Sas['SAS-var']
 
 plt.figure(figsize=(10, 6))
 plt.plot(VESPA_data["n"].values, VESPA_data["Mean"].values, color='black', label='VESPA Mean', linewidth=0.8, marker='o',markersize=2)
@@ -137,8 +136,8 @@ filtered_VESPA_data = VESPA_data[(VESPA_data['Mean_round'] != -1) &
                                  (VESPA_data['Max_round'] != -1)].copy()
 
 # Now, set the new columns without triggering the warning
-filtered_VESPA_data['Upper_filt'] = filtered_VESPA_data['Mean_round'] + filtered_VESPA_data['Std_round']
-filtered_VESPA_data['Lower_filt'] = filtered_VESPA_data['Mean_round'] - filtered_VESPA_data['Std_round']
+filtered_VESPA_data['Upper_filt'] = filtered_VESPA_data['Mean_round'] + filtered_VESPA_data['Var_round']
+filtered_VESPA_data['Lower_filt'] = filtered_VESPA_data['Mean_round'] - filtered_VESPA_data['Var_round']
 plt.figure(figsize=(10, 6))
 # Plot VESPA data
 plt.plot(filtered_VESPA_data["n"].values, filtered_VESPA_data["Mean_round"].values, color='black', label='VESPA Mean', linewidth=0.8, marker='o',markersize=2)
@@ -154,38 +153,32 @@ plt.savefig(f"{output_directory}Number and Variance 3-phase Round.png", format='
 
 
 plt.figure(figsize=(10, 6))
-# Define the positions for the boxplots, which will be the unique values in 'n'
-positions = filtered_VESPA_data['n'].unique()
-positions.sort()  # Ensure positions are in ascending order
-# Plot boxplot for each position
-for n in positions:
-    # Select the subset of data for the current 'n'
-    subset = filtered_VESPA_data[filtered_VESPA_data['n'] == n]
+positions = VESPA_data.loc[VESPA_data['Mean_round'] != -1, 'n'].values
+for i, n in enumerate(positions):
 
-    # Combine the metrics into a single array for the boxplot
+    subset = VESPA_data[VESPA_data['n'] == n]
     combined_metrics = np.concatenate([
         subset['Mean_round'].values,
-        subset['Std_round'].values,
-        subset['Var_round'].values,
+        subset['Min_round'].values,
         subset['Max_round'].values
     ])
 
-    # Create a boxplot or a scatter point depending on the variation in the data
-    if np.min(combined_metrics) == np.max(combined_metrics):
-        # If there is no variation, plot a scatter point instead of a boxplot
-        plt.scatter([n], [np.min(combined_metrics)], color='red', zorder=3)
-    else:
-        # Plot the boxplot at the position 'n'
-        plt.boxplot(combined_metrics, positions=[n], widths=2, patch_artist=True,
-                    boxprops=dict(facecolor="orange", color="orange", alpha=0.5),
-                    medianprops=dict(color="black"),
-                    whiskerprops=dict(color="orange"),
-                    capprops=dict(color="orange"),
-                    showfliers=False)
+    plt.boxplot(combined_metrics, positions=[n], widths=3, patch_artist=True,
+                boxprops=dict(facecolor="orange", color="orange",alpha=0.5),
+               medianprops=dict(color="black"),
+               whiskerprops=dict(color="orange"),
+              capprops=dict(color="orange"),
+               showfliers=False)
+
 plt.xlabel('Number of Drones', fontsize=12)
-plt.ylabel('Max/Avg/Min Number \n of 3-phase Round', fontsize=12)
-plt.xticks(np.arange(min(positions), max(positions) + 1, 5))
+plt.ylabel('Max/Avg/Min Number \n of Discovered Targets', fontsize=12)
+plt.yticks(np.arange(0,9, 1), fontsize=12)
+# xticks_range = np.arange(start=VESPA_data['n'].min(), stop=VESPA_data['n'].max() + 1, step=10)
+plt.xticks(np.arange(min(positions), max(positions) + 1, 5), fontsize=12)
+
 plt.tick_params(axis='x', labelrotation=45)  # Rotate tick labels for readability
+#plt.xticks(ticks=xticks_range, labels=xticks_range)
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 plt.savefig(f"{output_directory}Max-Avg-Min Number and Variance 3-phase Round.png", format='png', dpi=300)
+
