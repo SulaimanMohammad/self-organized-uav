@@ -1,6 +1,6 @@
 # Targets for one single test and the benchmarks
 size_of_target=8
-predfined_targets=predfined_targets={{0, 85}, {0, -85}, {85, 0}, {-85, 0}, {75, 75}, {75, -75}, {-75, 75}, {-75, -75}}
+predfined_targets={{0,85}, {0,-85}, {85,0}, {75,75}, {75,-75}, {-75,75}, {-75,-75}, {-85,0}}
 predfined_targets_random=false
 
 # For predfined targets

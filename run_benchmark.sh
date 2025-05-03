@@ -28,6 +28,15 @@ change_parameter()
         update_param "$param_name" "$new_value"
 }
 
+more_modif() {
+    read -p "Continue modification? (y/n): " response
+    if [[ "$response" == "no" || "$response" == "n" ]]; then
+        return 1  # false in shell terms
+    else
+        return 0  # true
+    fi
+}
+
 # Function to handle parameter configuration for pre_target or rand_targets
 configure_parameters() {
     mode=$1
@@ -44,6 +53,15 @@ configure_parameters() {
         echo "Current max number of drones to test: $max_num_drones_to_test"
         read -p "Keep current values for benchmark? (y/n):" response
         if [[ $response == "no" || $response == "n" ]]; then
+
+            # Confirm or update number_runs and max_num_drones_to_test
+            change_parameter "number_runs"
+            if ! more_modif; then return; fi
+
+            change_parameter "max_num_drones_to_test"
+            if ! more_modif; then return; fi
+
+
             read -p "Enter the new number of targets: " new_size_of_target
             update_param "size_of_target" "$new_size_of_target"
             size_of_target=$new_size_of_target
@@ -61,10 +79,11 @@ configure_parameters() {
 
             echo "Updated size of target to $size_of_target."
             echo "Updated predefined targets to {$new_targets}."
+        fi
 
-            # Confirm or update number_runs and max_num_drones_to_test
-            change_parameter "number_runs"
-            change_parameter "max_num_drones_to_test"
+        if [[ $response == "yes" || $response == "y" ]]; then
+            echo "No need to re-run SAS"
+            return 1
         fi
 
     elif [ "$mode" == "rand_targets" ]; then
@@ -81,12 +100,20 @@ configure_parameters() {
             change_parameter "max_number_targets"
             change_parameter "number_configurations_per_targets"
             change_parameter "max_drones_to_check"
+
+       fi
+
+        if [[ $response == "yes" || $response == "y" ]]; then
+            echo "No need to re-run SAS"
+            return 1
         fi
+
     fi
 }
 
 # Run benchmark functions
 run_benchmark_pre_target() {
+    cd build
     ./benchmark_predefined_targets
     cd ../benchmark
     python plot_benchmark_predefined_targets.py
@@ -94,6 +121,7 @@ run_benchmark_pre_target() {
 }
 
 run_benchmark_rand_targets() {
+    cd build
     ./benchmark_random_targets
     cd ../benchmark
     python plot_benchmark_random_targets.py
@@ -101,14 +129,27 @@ run_benchmark_rand_targets() {
 }
 
 if [ "$1" == "pre_target" ]; then
-    configure_parameters "pre_target"
+    root_path=$PWD
+    if configure_parameters "pre_target"; then
+    echo "Run SAS"
+    cd ./benchmark/SAS
+    sage experiments.py
+    cd $root_path
+    fi
     run_benchmark_pre_target
 
 elif [ "$1" == "rand_targets" ]; then
-    configure_parameters "rand_targets"
+    root_path=$PWD
+    if configure_parameters "rand_targets";then
+    echo "Run SAS"
+    cd ./benchmark/SAS
+    sage experiments.py
+    cd $root_path
+    fi
     run_benchmark_rand_targets
 
 elif [ "$1" == "all" ]; then
+    root_path=$PWD
     # Check if sage exists, if not prompt user to install
     if ! command -v sage &> /dev/null; then
         echo "sigmath is not installed. Please install it and retry."
@@ -119,9 +160,10 @@ elif [ "$1" == "all" ]; then
     # Run all benchmarks and plots
     cd ./benchmark/SAS
     sage experiments.py
-    cd ../../build 
-
+    cd $root_path
     run_benchmark_pre_target
+
+    cd $root_path
     run_benchmark_rand_targets
 
     echo 'All figures are saved in Fig_results directory'
